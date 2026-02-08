@@ -29,3 +29,7 @@ Route::get('/masterPegawai', function () {
 Route::get('/masterSupplier', function () {
     return view('masterSupplier');
 })->name('masterSupplier');
+
+Route::get('/pemasukanBarang', function () {
+    return view('PemasukanBarang');
+})->name('pemasukanBarang');
