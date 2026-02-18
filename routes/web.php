@@ -33,3 +33,15 @@ Route::get('/masterSupplier', function () {
 Route::get('/pemasukanBarang', function () {
     return view('PemasukanBarang');
 })->name('pemasukanBarang');
+
+Route::get('/laporanPengambilan', function () {
+    return view('laporanPengambilan');
+})->name('laporanPengambilan');
+
+Route::get('/stockAwal', function () {
+    return view('stockAwal');
+})->name('stockAwal');
+
+Route::get('/kartuKendali', function () {
+    return view('kartuKendali');
+})->name('kartuKendali');

@@ -74,8 +74,6 @@
                             <div class="number-input-wrapper">
                                 <input type="number" id="jumlah" name="jumlah" value="0" min="0" required>
                                 <div class="number-controls">
-                                    <button type="button" onclick="incrementJumlah()">▲</button>
-                                    <button type="button" onclick="decrementJumlah()">▼</button>
                                 </div>
                             </div>
                         </div>
@@ -113,7 +111,7 @@
 
        <!-- Admin Login Button -->
         <div class="admin-login">
-            <button class="admin-login-btn" onclick="window.location.href='/login'">Login as Admin</button>
+            <button class="admin-login-btn" onclick="window.location.href='/login'">Login Admin</button>
             <p>masuk sebagai admin</p>
         </div>
 

@@ -109,7 +109,7 @@
             position: fixed;
             bottom: 30px;
             left: 25px;
-            background: rgba(239, 68, 68, 0.15);
+            background: rgb(181, 27, 27);
             border: 1.5px solid rgba(239, 68, 68, 0.3);
             color: #fecaca;
             padding: 12px 20px;
@@ -127,7 +127,7 @@
         }
 
         .logout-btn:hover {
-            background: rgba(239, 68, 68, 0.25);
+            background:rgb(181, 27, 27, 1);
             border-color: rgba(239, 68, 68, 0.5);
             color: white;
             transform: translateY(-2px);
