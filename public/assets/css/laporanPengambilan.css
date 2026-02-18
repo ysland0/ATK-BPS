@@ -437,20 +437,19 @@
 
         /* Print Styles */
         @media print {
-            .sidebar, .filter-card, .action-buttons {
+            /* Pastikan gambar/logo dipaksa muncul */
+            img {
+                display: block !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            /* Sembunyikan sidebar dan tombol filter saat cetak rekap bulanan */
+            .sidebar, .filter-card, .logout-btn, .action-buttons {
                 display: none !important;
             }
 
             .main-content {
-                margin-left: 0;
-                padding: 20px;
-            }
-
-            body {
-                background: white;
-            }
-
-            .result-section {
-                box-shadow: none;
+                margin: 0 !important;
+                padding: 0 !important;
             }
         }

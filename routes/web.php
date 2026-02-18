@@ -45,3 +45,7 @@ Route::get('/stockAwal', function () {
 Route::get('/kartuKendali', function () {
     return view('kartuKendali');
 })->name('kartuKendali');
+
+Route::get('/laporanRinciBulanan', function () {
+    return view('laporanRinciBulanan');
+})->name('laporanRinciBulanan');

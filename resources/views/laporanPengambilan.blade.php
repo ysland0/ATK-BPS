@@ -54,7 +54,7 @@
                 </svg>
                 Pengambilan Barang
             </a>
-            <a href="#" class="menu-item">
+            <a href="/rinciBulanan" class="menu-item">
                 <svg fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                     <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
@@ -376,6 +376,8 @@
             document.getElementById('tanggal').value = today;
         });
 
+        // Embed logo as base64 so print window/PDF can always load it (unescaped output)
+        const logoBase64 = 'data:image/png;base64,{!! base64_encode(file_get_contents(public_path("assets/images/logoBPS.png"))) !!}';
         // Toggle Filter Fields
         function toggleFilterFields() {
             const jenis = document.getElementById('jenisLaporan').value;
@@ -424,256 +426,97 @@
             // Cetak PDF dengan Format Surat Resmi
             function cetakPDF() {
                 const jenis = document.getElementById('jenisLaporan').value;
+                const tanggal = document.getElementById('tanggal').value;
+                const dateObj = new Date(tanggal);
+                const options = { day: '2-digit', month: 'long', year: 'numeric' };
+                const tanggalIndo = dateObj.toLocaleDateString('id-ID', options);
                 
-                if (jenis === 'harian') {
-                    const tanggal = document.getElementById('tanggal').value;
-                    const dateObj = new Date(tanggal);
-                    
-                    // Format tanggal Indonesia
-                    const options = { day: '2-digit', month: 'long', year: 'numeric' };
-                    const tanggalIndo = dateObj.toLocaleDateString('id-ID', options);
-                    
-                    // Get bulan dan tahun
-                    const bulan = dateObj.toLocaleDateString('id-ID', { month: 'long' }).toUpperCase();
-                    const tahun = dateObj.getFullYear();
-                    
-                    // Ambil data dari tabel
+                // Ambil Judul & Data Tabel berdasarkan jenis yang aktif
+                let title = document.getElementById('resultTitle').textContent;
+                let tableContent = "";
+                
+                if (jenis === 'bulanan') {
+                    tableContent = document.querySelector('#rekapBulananTable table').outerHTML;
+                } else {
+                    // Ambil baris dari tabel harian (tanpa kolom aksi)
                     const rows = document.querySelectorAll('#laporanHarianTable tbody tr');
                     let tableRows = '';
-                    
                     rows.forEach((row, index) => {
                         const cells = row.querySelectorAll('td');
-                        const namaBarang = cells[2].textContent;
-                        const satuan = cells[3].textContent;
-                        const banyaknya = cells[4].textContent;
-                        const namaPengambil = cells[5].textContent;
-                        const hasSignature = row.getAttribute('data-signature') === 'yes';
-                        
                         tableRows += `
                             <tr>
                                 <td style="border: 1px solid #000; padding: 8px; text-align: center;">${index + 1}</td>
-                                <td style="border: 1px solid #000; padding: 8px;">${namaBarang}</td>
-                                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${satuan}</td>
-                                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${banyaknya}</td>
-                                <td style="border: 1px solid #000; padding: 8px;">${namaPengambil}</td>
-                                <td style="border: 1px solid #000; padding: 8px; text-align: center;">
-                                    ${hasSignature ? '<div style="font-family: cursive; font-size: 18px; height: 40px; display: flex; align-items: center; justify-content: center;">✓</div>' : '<div style="height: 40px;"></div>'}
-                                </td>
-                            </tr>
-                        `;
+                                <td style="border: 1px solid #000; padding: 8px;">${cells[2].textContent}</td>
+                                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${cells[3].textContent}</td>
+                                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${cells[4].textContent}</td>
+                                <td style="border: 1px solid #000; padding: 8px;">${cells[5].textContent}</td>
+                                <td style="border: 1px solid #000; padding: 8px; text-align: center;">✓</td>
+                            </tr>`;
                     });
-                    
-                    // Buat window baru untuk print
-                    const printWindow = window.open('', '_blank');
-                    printWindow.document.write(`
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <meta charset="UTF-8">
-                            <title>Surat Permintaan Barang - ${tanggalIndo}</title>
-                            <style>
-                                @page {
-                                    size: A4;
-                                    margin: 2cm;
-                                }
-                                
-                                body {
-                                    font-family: Arial, sans-serif;
-                                    font-size: 11pt;
-                                    line-height: 1.4;
-                                    color: #000;
-                                    margin: 0;
-                                    padding: 20px;
-                                }
-                                
-                                .header {
-                                    display: flex;
-                                    justify-content: space-between;
-                                    align-items: flex-start;
-                                    margin-bottom: 30px;
-                                }
-                                
-                                .logo-section {
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 15px;
-                                }
-                                
-                                .logo {
-                                    width: 80px;
-                                    height: 80px;
-                                }
-                                
-                                .agency-name {
-                                    font-size: 10pt;
-                                    font-weight: bold;
-                                    line-height: 1.3;
-                                }
-                                
-                                .doc-info {
-                                    text-align: right;
-                                    font-size: 9pt;
-                                }
-                                
-                                .doc-info div {
-                                    margin-bottom: 3px;
-                                }
-                                
-                                .title {
-                                    text-align: center;
-                                    margin: 30px 0;
-                                }
-                                
-                                .title h1 {
-                                    font-size: 12pt;
-                                    font-weight: bold;
-                                    margin: 0 0 5px 0;
-                                    text-decoration: underline;
-                                }
-                                
-                                .title h2 {
-                                    font-size: 11pt;
-                                    font-weight: normal;
-                                    margin: 0 0 3px 0;
-                                }
-                                
-                                .title h3 {
-                                    font-size: 10pt;
-                                    font-weight: normal;
-                                    margin: 0;
-                                }
-                                
-                                table {
-                                    width: 100%;
-                                    border-collapse: collapse;
-                                    margin: 20px 0;
-                                }
-                                
-                                th {
-                                    background-color: #f0f0f0;
-                                    border: 1px solid #000;
-                                    padding: 8px;
-                                    font-size: 10pt;
-                                    font-weight: bold;
-                                    text-align: center;
-                                }
-                                
-                                td {
-                                    border: 1px solid #000;
-                                    padding: 8px;
-                                    font-size: 10pt;
-                                }
-                                
-                                .footer {
-                                    margin-top: 40px;
-                                    display: flex;
-                                    justify-content: space-between;
-                                }
-                                
-                                .footer-section {
-                                    width: 45%;
-                                    text-align: center;
-                                }
-                                
-                                .footer-title {
-                                    font-size: 9pt;
-                                    margin-bottom: 5px;
-                                }
-                                
-                                .footer-subtitle {
-                                    font-size: 8pt;
-                                    margin-bottom: 60px;
-                                }
-                                
-                                .footer-name {
-                                    font-size: 10pt;
-                                    font-weight: bold;
-                                    text-decoration: underline;
-                                }
-                                
-                                .footer-nip {
-                                    font-size: 9pt;
-                                }
-                                
-                                @media print {
-                                    body {
-                                        padding: 0;
-                                    }
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <!-- Header -->
-                            <div class="header">
-                            <img src="${window.location.origin}/assets/images/logoBPS.png" class="logo">
-                                <div class="logo-section">
-                                    <div class="agency-name">
-                                        BADAN PUSAT STATISTIK<br>
-                                        KOTA SEMARANG
-                                    </div>
-                                </div>
-                            
-                                <div class="doc-info">
-                                    <div>JENIS : HARIAN</div>
-                                    <div>BULAN : ${bulan}</div>
-                                    <div>TAHUN : ${tahun}</div>
-                                </div>
-                            </div>
-                        
-                            <!-- Title -->
-                            <div class="title">
-                                <h1>SURAT PERMINTAAN BARANG</h1>
-                                <h2>BADAN PUSAT STATISTIK KOTA SEMARANG</h2>
-                                <h3>ATK/CETAK/BANDEL</h3>
-                            </div>
-                            
-                            <!-- Table -->
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="width: 5%;">NO</th>
-                                        <th style="width: 30%;">NAMA BARANG</th>
-                                        <th style="width: 10%;">SATUAN</th>
-                                        <th style="width: 10%;">BANYAKNYA</th>
-                                        <th style="width: 25%;">NAMA PENGAMBIL BARANG</th>
-                                        <th style="width: 20%;">TANDA TANGAN</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${tableRows}
-                                </tbody>
-                            </table>
-                            
-                            <!-- Footer -->
-                            <div class="footer">
-                                <div class="footer-section">
-                                    <div class="footer-title">MENGETAHUI,</div>
-                                    <div class="footer-subtitle">KEPALA SUBBAGIAN UMUM</div>
-                                    <div class="footer-name">( IRMA WULANDARI )</div>
-                                    <div class="footer-nip">NIP. 19880128 199403 2-01</div>
-                                </div>
-                                <div class="footer-section">
-                                    <div class="footer-title">SEMARANG, ${tanggalIndo}</div>
-                                    <div class="footer-subtitle">PETUGAS PERSEDIAAN</div>
-                                    <div class="footer-name">( HARTANTO ADISATRIANTO )</div>
-                                    <div class="footer-nip">NIP. 19780922 199126 1-02</div>
-                                </div>
-                            </div>
-                            
-                            <script>
-                                window.onload = function() {
-                                    window.print();
-                                }
-                            <\/script>
-                        </body>
-                        </html>
-                    `);
-                    printWindow.document.close();
-                    
-                } else {
-                    // Untuk rekap bulanan, tetap gunakan window.print() biasa
-                    window.print();
+                    tableContent = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%;">NO</th>
+                                    <th style="width: 35%;">NAMA BARANG</th>
+                                    <th style="width: 10%;">SATUAN</th>
+                                    <th style="width: 10%;">QTY</th>
+                                    <th style="width: 25%;">PENGAMBIL</th>
+                                    <th style="width: 15%;">TTD</th>
+                                </tr>
+                            </thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>`;
                 }
+
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>Cetak Laporan - ${title}</title>
+                        <style>
+                            body { font-family: Arial; padding: 20px; }
+                            .header-print { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+                            .logo-print { width: 70px; height: 70px; margin-right: 15px; }
+                            .title-print { flex-grow: 1; }
+                            .title-print h1 { font-size: 14pt; margin: 0; }
+                            .title-print p { font-size: 10pt; margin: 0; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            th, td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 10pt; }
+                            th { background-color: #f2f2f2; text-align: center; }
+                            .footer { margin-top: 50px; display: flex; justify-content: space-between; }
+                            .sig-box { text-align: center; width: 200px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header-print">
+                            <img src="${logoBase64}" class="logo-print">
+                            <div class="title-print">
+                                <h1>BADAN PUSAT STATISTIK KOTA SEMARANG</h1>
+                                <p>Jl. Inspeksi Kali No. 1 Semarang</p>
+                            </div>
+                        </div>
+                        <h2 style="text-align: center; font-size: 12pt;">${title}</h2>
+                        ${tableContent}
+                        <div class="footer">
+                            <div class="sig-box">
+                                <p>Mengetahui,</p>
+                                <p style="margin-bottom: 60px;">Kepala Subbagian Umum</p>
+                                <p><b>IRMA WULANDARI</b></p>
+                                <p>NIP. 19880128 199403 2-01</p>
+                            </div>
+                            <div class="sig-box">
+                                <p>Semarang, ${tanggalIndo}</p>
+                                <p style="margin-bottom: 60px;">Petugas Persediaan</p>
+                                <p><b>HARTANTO ADISATRIANTO</b></p>
+                                <p>NIP. 19780922 199126 1-02</p>
+                            </div>
+                        </div>
+                        <script>window.onload = function() { window.print(); window.close(); }<\/script>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
             }
 
         // CRUD Functions
