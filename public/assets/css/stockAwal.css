@@ -452,6 +452,7 @@
 
         .table-container {
             overflow-x: auto;
+            padding-bottom: 30px !important; 
         }
 
         table {
@@ -504,46 +505,48 @@
             color: #065f46;
         }
 
+            /* Container tombol agar rapat tengah */
         .action-buttons {
             display: flex;
             gap: 8px;
+            justify-content: flex-start !important;
+            align-items: center;
         }
 
-        .action-btn {
+        /* Base style tombol aksi (Efek Squircle seperti gambar 2) */
+        .btn-action {
             width: 32px;
             height: 32px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
+            border-radius: 6px; /* Membuat sudut lebih bulat cantik */
+            border: none;        /* Hapus garis pinggir biar bersih */
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .action-btn svg {
+        /* Tombol Edit (Kuning Telur Asin Soft) */
+        .edit-btn {
+            background-color: #fef3c7 !important; /* Warna kuning penuh tapi lembut */
+            color: #b45309 !important;           /* Warna ikon cokelat tua agar kontras */
+        }
+
+        /* Tombol Delete (Merah Muda Soft) */
+        .delete-btn {
+            background-color: #fee2e2 !important; /* Warna merah muda penuh */
+            color: #b91c1c !important;           /* Warna ikon merah tua */
+        }
+
+        /* Efek saat ditekan atau diarahkan mouse */
+        .btn-action:hover {
+            transform: scale(1.05);
+            filter: brightness(0.95);
+        }
+
+        .btn-action svg {
             width: 16px;
             height: 16px;
-        }
-
-        .edit-btn {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .edit-btn:hover {
-            background: #fde68a;
-            transform: scale(1.1);
-        }
-
-        .delete-btn {
-            background: #fecaca;
-            color: #991b1b;
-        }
-
-        .delete-btn:hover {
-            background: #fca5a5;
-            transform: scale(1.1);
         }
 
         /* Modal */

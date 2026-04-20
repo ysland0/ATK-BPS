@@ -5,6 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pemasukan Barang - Pencatatan ATK</title>
     <link rel="stylesheet" href="{{ asset('assets/css/pemasukanBarang.css') }}">
+    <style>
+        .main-content {
+            background-color: #f8fafc;
+        }
+
+        /* Container Tabel */
+        .inventory-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            margin-top: 40px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .inventory-header {
+            background: linear-gradient(135deg, #3749A6 0%, #5b6fc9 100%);
+            color: white;
+            padding: 18px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Styling Tabel */
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .inventory-table th {
+            background-color: #f1f5f9;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .inventory-table td {
+            padding: 14px 15px;
+            font-size: 14px;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .inventory-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Badge Bulat */
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+        .badge-pembelian { background: #dcfce7; color: #15803d; }
+        .badge-transfer { background: #fef9c3; color: #a16207; }
+
+        /* Ikon Aksi */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Base style tombol aksi (Squircle) */
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px; /* Sudut bulat cantik */
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        /* Warna Tombol Edit (Kuning Soft) */
+        .btn-edit {
+            background-color: #fef3c7 !important; 
+            color: #b45309 !important;
+        }
+
+        /* Warna Tombol Delete (Merah Soft) */
+        .btn-delete {
+            background-color: #fee2e2 !important;
+            color: #b91c1c !important;
+        }
+
+        /* Efek Hover */
+        .action-btn:hover {
+            transform: scale(1.1);
+            filter: brightness(0.95);
+        }
+
+        /* Ukuran Ikon SVG */
+        .action-btn svg {
+            width: 18px;
+            height: 18px;
+
+        }
+    </style>
 </head>
 <body>
     <!-- Sidebar -->
@@ -124,11 +235,12 @@
                     <h2>Tambah Pemasukan</h2>
                 </div>
 
-                <form id="pemasukanForm" onsubmit="submitForm(event)">
+                <form id="pemasukanForm" method="POST" action="/simpan-pemasukan">
+                    @csrf
                     <!-- Tipe Pemasukan -->
                     <div class="form-group">
                         <label>Tipe Pemasukan</label>
-                        <select id="tipePemasukan" onchange="toggleSupplier()">
+                        <select name="tipe_pemasukan" id="tipePemasukan" onchange="toggleSupplier()" required>
                             <option value="">-- Pilih Tipe --</option>
                             <option value="pembelian">Pembelian</option>
                             <option value="transfer">Transfer Masuk</option>
@@ -138,56 +250,57 @@
                     <!-- Supplier -->
                     <div class="form-group" id="supplierGroup" style="display: none;">
                         <label>Supplier</label>
-                        <select id="supplier">
+                        <select name="supplier" id="supplier">
                             <option value="">-- Pilih Supplier --</option>
-                            <option value="1">PT. Maju Jaya</option>
-                            <option value="2">CV. Karya Mandiri</option>
-                            <option value="3">UD. Sumber Rejeki</option>
+                            
+                            <!-- LOOPING DATA ASLI DARI DATABASE -->
+                            @foreach($suppliers as $s)
+                                <option value="{{ $s->nama_supplier }}">{{ $s->nama_supplier }}</option>
+                            @endforeach
+                            
                         </select>
                     </div>
 
                     <!-- No Surat Jalan -->
                     <div class="form-group">
                         <label>No Surat Jalan</label>
-                        <input type="text" id="noSuratJalan" placeholder="Contoh: SJ-2026-001">
+                        <input type="text" name="no_surat_jalan" id="noSuratJalan" placeholder="Contoh: SJ-2026-001">
                     </div>
 
                     <!-- Barang -->
                     <div class="form-group">
                         <label>Barang</label>
-                        <select id="barang">
+                        <select name="barang_id" id="barang" required>
                             <option value="">-- Cari Barang --</option>
-                            <option value="1">Pulpen Biru Standard</option>
-                            <option value="2">Kertas A4 80gsm</option>
-                            <option value="3">Spidol Whiteboard</option>
-                            <option value="4">Penghapus</option>
-                            <option value="5">Staples</option>
+                            @foreach($barangs as $barang)
+                                <option value="{{ $barang->id }}">{{ $barang->nama_barang }}</option>
+                            @endforeach
                         </select>
                     </div>
 
                     <!-- Jumlah -->
                     <div class="form-group">
                         <label>Jumlah</label>
-                        <input type="number" id="jumlah" placeholder="0" min="0">
+                        <input type="number" name="jumlah" id="jumlah" placeholder="0" min="1" required>
                     </div>
 
                     <!-- Satuan Harga -->
                     <div class="form-group" id="hargaGroup" style="display: none;">
                         <label>Satuan Harga</label>
-                        <input type="number" id="satuanHarga" placeholder="0" min="0">
-                        <p class="form-note">Diisi jika tipe PEMBELIAN</p>
+                        <input type="number" name="satuan_harga" id="satuanHarga" value="0">
+                        <p class="form-note">Diisi jika tipe Pembelian, isilah harga tanpa koma maupun titik.</p>
                     </div>
 
                     <!-- Tanggal Pemasukan -->
                     <div class="form-group">
                         <label>Tanggal Pemasukan</label>
-                        <input type="date" id="tanggalPemasukan">
+                        <input type="date" name="tanggal_pemasukan" id="tanggalPemasukan" required>
                     </div>
 
                     <!-- Keterangan -->
                     <div class="form-group">
                         <label>Keterangan</label>
-                        <textarea id="keterangan" placeholder="Catatan tambahan (opsional)"></textarea>
+                        <textarea name="keterangan" id="keterangan" placeholder="Catatan tambahan (opsional)"></textarea>
                     </div>
 
                     <!-- Buttons -->
@@ -228,7 +341,83 @@
                 </div>
             </div>
         </div>
-    </div>
+
+        <div class="inventory-card">
+                <div class="inventory-header">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 style="font-size: 16px; margin: 0;">Riwayat Pemasukan Terbaru</h2>
+                </div>
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>No Surat Jalan</th>
+                            <th>Barang</th>
+                            <th style="text-align: center;">Jumlah</th>
+                            <th style="text-align: center;">Satuan Harga</th>
+                            <th style="text-align: center;">Tipe</th>
+                            <th>Supplier</th>
+                            <th>Keterangan</th>
+                            <th style="text-align: center;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($riwayatPemasukan as $r)
+                        <tr>
+                            <td>{{ \Carbon\Carbon::parse($r->tanggal_pemasukan)->format('d/m/Y') }}</td>
+                            <td>{{ $r->no_surat_jalan ?? '-' }}</td>
+                            <td>{{ $r->barang->nama_barang ?? $r->nama_barang }}</td>
+                            
+                            <td style="text-align: center;">
+                                <b style="color: #059669;">+{{ $r->jumlah }}</b> 
+                                <span style="font-size: 12px; color: #64748b;">{{ $r->barang->satuan ?? 'buah' }}</span>
+                            </td>
+
+                            <td style="text-align: center;">
+                                <b>Rp {{ number_format($r->satuan_harga, 0, ',', '.') }}</b>
+                            </td>
+
+                            <td style="text-align: center;">
+                                <span class="badge {{ $r->tipe_pemasukan == 'pembelian' ? 'badge-pembelian' : 'badge-transfer' }}">
+                                    {{ $r->tipe_pemasukan }}
+                                </span>
+                            </td>
+
+                            <td>{{ $r->supplier ?? 'PUSAT' }}</td>
+
+                            <td style="font-size: 13px; color: #64748b; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $r->keterangan }}"> {{ $r->keterangan ?? '-' }}</td>
+
+                            <td style="text-align: center;">
+                                <div class="action-buttons">
+                                    <!-- Tombol Edit (Ikon Pensil SVG) -->
+                                    <button class="btn-action btn-edit" title="Edit">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                        </svg>
+                                    </button>
+
+                                    <!-- Tombol Hapus (Ikon Tong Sampah SVG) -->
+                                    <form action="/hapus-pemasukan/{{ $r->id }}" method="POST" style="margin:0;">
+                                        @csrf 
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-action btn-delete" onclick="return confirm('Hapus riwayat ini?')" title="Hapus">
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="9" class="empty-state">Belum ada data pemasukan barang.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
     <!-- Logout Modal -->
     <div id="logoutModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center;">
@@ -272,54 +461,6 @@
             }
         }
 
-        // Submit Form
-        function submitForm(event) {
-            event.preventDefault();
-            
-            const tipePemasukan = document.getElementById('tipePemasukan').value;
-            const supplier = document.getElementById('supplier').value;
-            const noSuratJalan = document.getElementById('noSuratJalan').value;
-            const barang = document.getElementById('barang').value;
-            const jumlah = document.getElementById('jumlah').value;
-            const satuanHarga = document.getElementById('satuanHarga').value;
-            const tanggalPemasukan = document.getElementById('tanggalPemasukan').value;
-            const keterangan = document.getElementById('keterangan').value;
-
-            // Validasi
-            if (!tipePemasukan) {
-                alert('Pilih tipe pemasukan terlebih dahulu!');
-                return;
-            }
-
-            if (tipePemasukan === 'pembelian' && !supplier) {
-                alert('Pilih supplier untuk pembelian!');
-                return;
-            }
-
-            if (!barang) {
-                alert('Pilih barang yang akan dimasukkan!');
-                return;
-            }
-
-            if (!jumlah || jumlah <= 0) {
-                alert('Masukkan jumlah barang!');
-                return;
-            }
-
-            console.log({
-                tipePemasukan,
-                supplier,
-                noSuratJalan,
-                barang,
-                jumlah,
-                satuanHarga,
-                tanggalPemasukan,
-                keterangan
-            });
-
-            alert('Data pemasukan berhasil disimpan!');
-            resetForm();
-        }
 
         // Reset Form
         function resetForm() {

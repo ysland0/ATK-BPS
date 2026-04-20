@@ -5,6 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Awal Tahun - Pencatatan ATK</title>
     <link rel="stylesheet" href="{{ asset('assets/css/stockAwal.css') }}">
+    <style>
+        .pagination-wrapper {
+            width: 100%;
+            overflow-x: auto; 
+            padding: 15px 0 25px 0; 
+            display: flex;
+            justify-content: center; 
+            cursor: grab; 
+            user-select: none; 
+        }
+
+        .pagination-wrapper::-webkit-scrollbar {
+            height: 5px; 
+        }
+
+        .pagination-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .pagination-wrapper::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+
+        .pagination-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #4a5fc1; 
+        }
+
+        .pagination-container {
+            display: inline-flex;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: white;
+        }
+
+        .pagination-btn {
+            padding: 10px 18px;
+            border: none;
+            border-right: 1px solid #e5e7eb;
+            background: white;
+            color: #4a5fc1;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0; 
+        }
+
+        .pagination-btn:last-child {
+            border-right: none;
+        }
+
+        .pagination-btn.active {
+            background: #4a5fc1;
+            color: white;
+        }
+
+        .pagination-btn:hover:not(.active) {
+            background: #f3f4f6;
+        }
+    </style>
 </head>
 <body>
     <!-- Sidebar (sama seperti sebelumnya) -->
@@ -132,7 +193,7 @@
                 <div class="stats-card green">
                     <div class="stats-content">
                         <div class="stats-info">
-                            <h3 id="statsComplete">79 / 79</h3>
+                            <h3 id="statsComplete">{{ $sudahDiatur }} / {{ $totalBarang }}</h3>
                             <p>Barang Sudah Diatur Stock Awalnya</p>
                         </div>
                         <div class="stats-icon green">
@@ -142,14 +203,18 @@
                         </div>
                     </div>
                     <div class="progress-bar">
-                        <div class="progress-fill" id="progressBar" style="width: 100%;"></div>
+                        <div class="progress-fill" id="progressBar" style="width: {{ $persentase }}%;"></div>
                     </div>
                     <div style="margin-top: 15px;">
                         <div class="alert-info" id="alertComplete">
                             <svg fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
-                            <p>Semua barang sudah diatur</p>
+                            @if($belumDiatur > 0)
+                                <p>Masih ada {{ $belumDiatur }} barang yang belum diatur</p>
+                            @else
+                                <p>Semua barang sudah diatur</p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -157,7 +222,7 @@
                 <div class="stats-card yellow">
                     <div class="stats-content">
                         <div class="stats-info">
-                            <h3 id="statsIncomplete">0</h3>
+                            <h3 id="statsIncomplete">{{ $belumDiatur }}</h3>
                             <p>Barang Belum Diatur</p>
                         </div>
                         <div class="stats-icon yellow">
@@ -221,61 +286,54 @@
                         <!-- Data akan diisi otomatis dari JavaScript -->
                     </tbody>
                 </table>
+                <div class="pagination-wrapper" id="scrollContainer">
+                    <div id="pagination" class="pagination-container"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Tambah Satuan -->
-    <div id="addModal" class="modal-overlay">
+        <div id="addModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Tambah Stock Awal Barang</h2>
-                <button class="close-btn" onclick="closeAddModal()">
-                    <svg fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                    </svg>
-                </button>
+                <button class="close-btn" onclick="closeAddModal()">&times;</button>
             </div>
 
-            <form id="stockForm" onsubmit="submitForm(event)">
+            <!-- FORM DIMULAI -->
+            <form action="{{ route('stock.update') }}" method="POST">
+                @csrf
                 <div class="form-group">
                     <label>Pilih Barang <span>*</span></label>
-                    <select id="barangSelect" required onchange="updateBarangInfo()">
+                    <select name="barang_id" id="barangSelect" required onchange="updateBarangInfo()">
                         <option value="">-- Pilih Barang --</option>
-                        <option value="10103020020026|Kertas Concorde A4">Kertas Concorde A4</option>
-                        <option value="10103010120002|Staples Joyko HD-50">Staples Joyko HD-50</option>
-                        <option value="10103040040101|Tinta Epson 008 (BK)">Tinta Epson 008 (BK)</option>
-                        <option value="10103010100027|Double tape - 3M stron">Double tape - 3M stron</option>
-                        <option value="10103010100026|Selotip Daimaru 1 inch">Selotip Daimaru 1 inch</option>
+                        @foreach($barangs as $b)
+                            <option value="{{ $b->id }}" data-kode="{{ $b->kode_barang }}" data-satuan="{{ $b->satuan }}">
+                                {{ $b->nama_barang }} (Sisa: {{ $b->stok_awal }})
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>Kode Barang</label>
-                    <input type="text" id="kodeBarang" readonly style="background: #f3f4f6;">
+                    <input type="text" id="kodeBarangInput" readonly style="background: #f3f4f6;">
                 </div>
 
                 <div class="form-group">
                     <label>Satuan <span>*</span></label>
-                    <select id="satuan" required>
-                        <option value="">Pilih Satuan</option>
-                        <option value="Buah">Buah</option>
-                        <option value="Box">Box</option>
-                        <option value="Pak">Pak</option>
-                        <option value="Rim">Rim</option>
-                        <option value="Dus">Dus</option>
-                        <option value="Lembar">Lembar</option>
-                    </select>
+                    <input type="text" name="satuan" id="satuanInput" readonly style="background: #f3f4f6;">
+                    <p style="font-size: 11px; color: #6b7280; margin-top: 5px;">*Satuan mengikuti data Master Barang</p>
                 </div>
 
                 <div class="form-group">
                     <label>Stock Awal <span>*</span></label>
-                    <input type="number" id="stockAwal" placeholder="0" min="0" required>
+                    <input type="number" name="stok_awal" placeholder="0" min="0" required>
                 </div>
 
                 <div class="form-group">
                     <label>Keterangan</label>
-                    <input type="text" id="keterangan" placeholder="Opsional">
+                    <input type="text" name="keterangan" placeholder="Opsional">
                 </div>
 
                 <div class="modal-buttons">
@@ -302,260 +360,246 @@
             </div>
         </div>
     </div>
-
+    
     <script>
-        // Data stock barang
-        let stockData = [
-            {id: 1, kode: '10103020040035', nama: 'Amplop Coklat Cokelat Folio', satuan: 'Lembar', stock: 62, tanggal: '2026-01-26', keterangan: '-'},
-            {id: 2, kode: '10103020040040', nama: 'Amplop folio cokelat cetakan BPS Kota Semarang', satuan: 'Buah', stock: 663, tanggal: '2026-01-26', keterangan: '-'},
-            {id: 3, kode: '10103020040039', nama: 'Amplop kabinet cokelat cetakan BPS Kota Semarang', satuan: 'Buah', stock: 131, tanggal: '2026-01-26', keterangan: '-'},
-            {id: 4, kode: '10103020040034', nama: 'Amplop Kabinet Kop BPS', satuan: 'Buah', stock: 512, tanggal: '2026-01-26', keterangan: '-'},
-            {id: 5, kode: '10103999990630', nama: 'Bahan Publikitas SE2026 (Totebag)', satuan: 'Buah', stock: 62, tanggal: '2026-01-26', keterangan: '-'},
-            {id: 6, kode: '10103019990046', nama: 'Balliner Pilot', satuan: 'Buah', stock: 62, tanggal: '2026-01-26', keterangan: '-'},
-            {id: 7, kode: '10103010010039', nama: 'Ballpoint Balliner Pilot', satuan: 'Buah', stock: 9, tanggal: '2026-01-26', keterangan: '-'},
-            {id: 8, kode: '10103010010030', nama: 'Ballpoint Snowman v5', satuan: 'Buah', stock: 62, tanggal: '2026-01-26', keterangan: '-'},
-            {id: 9, kode: '10103999990433', nama: 'Ballpoint Trendee 02 PKP 2023', satuan: 'Buah', stock: 624, tanggal: '2026-01-26', keterangan: '-'},
-            {id: 10, kode: '10103060100004', nama: 'Batu Baterai ABC', satuan: 'Buah', stock: 2, tanggal: '2026-01-26', keterangan: '-'}
-        ];
+        // 1. Inisialisasi Data dari Laravel
+        let stockData = @json($barangsJson);
+        let originalData = [...stockData]; // Data cadangan untuk pencarian
+        let filteredData = [...stockData]; // Data yang sedang ditampilkan (setelah filter/search)
 
-        let originalData = [...stockData];
+        // 2. Pengaturan Pagination
+        let currentPage = 1;
+        const rowsPerPage = 10; 
 
-        // Render table
-        function renderTable(data = stockData) {
+        // 3. Fungsi Utama Merender Tabel
+        function renderTable(data = filteredData) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            data.forEach((item, index) => {
+            // Hitung baris yang harus muncul di halaman ini
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = data.slice(start, end);
+
+            if (paginatedData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Data tidak ditemukan.</td></tr>`;
+            }
+
+            paginatedData.forEach((item, index) => {
+                const rowNumber = start + index + 1;
+                // Badge Warna: Hijau jika ada stok, Merah jika 0
+                const badgeClass = item.stock > 0 ? 
+                    'background: #d1fae5; color: #065f46;' : 
+                    'background: #fee2e2; color: #991b1b;';
+
                 const row = `
                     <tr>
-                        <td>${index + 1}</td>
+                        <td style="text-align:center;">${rowNumber}</td>
                         <td>${item.kode}</td>
                         <td>${item.nama}</td>
                         <td>${item.satuan}</td>
-                        <td><span class="stock-badge">${item.stock}</span></td>
+                        <td style="text-align:center;">
+                            <span style="${badgeClass} padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 12px;">
+                                ${item.stock}
+                            </span>
+                        </td>
                         <td>${formatTanggal(item.tanggal)}</td>
                         <td>${item.keterangan}</td>
-                        <td>
+                       <td>
                             <div class="action-buttons">
-                                <button class="action-btn edit-btn" onclick="editStock(${item.id})">
+                                <!-- Tombol Edit -->
+                                <button class="btn-action edit-btn" onclick="editStock(${item.id})" title="Edit">
                                     <svg fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
                                     </svg>
                                 </button>
-                                <button class="action-btn delete-btn" onclick="deleteStock(${item.id})">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
+
+                                <!-- Tombol Hapus -->
+                                <form action="/hapus-stockawal/${item.id}" method="POST" style="margin:0;">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn-action delete-btn" title="Hapus">
+                                        <svg fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </button>
+                                </form>
                             </div>
-                        </td>
+                        </td>        
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
 
+            renderPagination(data.length);
             updateStats();
         }
 
-        // Format tanggal
-        function formatTanggal(tanggal) {
-            const date = new Date(tanggal);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
+        // 4. Fungsi Membuat Tombol Angka (Pagination)
+        function renderPagination(totalItems) {
+            const paginationContainer = document.getElementById('pagination');
+            paginationContainer.innerHTML = '';
+            
+            const totalPages = Math.ceil(totalItems / rowsPerPage);
+            if (totalPages <= 1) return;
+
+            // --- LOGIKA PEMBATASAN ANGKA ---
+            let maxVisibleButtons = 5; // Jumlah angka yang tampil
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
+
+            if (endPage - startPage + 1 < maxVisibleButtons) {
+                startPage = Math.max(1, endPage - maxVisibleButtons + 1);
+            }
+
+            // Tombol First (Jika halaman > 1)
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.innerText = '1';
+                firstBtn.className = 'pagination-btn';
+                firstBtn.onclick = () => { currentPage = 1; renderTable(); };
+                paginationContainer.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.innerText = '...';
+                    dots.style.padding = '10px';
+                    paginationContainer.appendChild(dots);
+                }
+            }
+
+            // Loop Angka Halaman yang sudah dibatasi
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderTable();
+                    window.scrollTo(0, 400); // Scroll ke arah tabel
+                };
+                paginationContainer.appendChild(btn);
+            }
+
+            // Tombol Last
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.innerText = '...';
+                    dots.style.padding = '10px';
+                    paginationContainer.appendChild(dots);
+                }
+                const lastBtn = document.createElement('button');
+                lastBtn.innerText = totalPages;
+                lastBtn.className = 'pagination-btn';
+                lastBtn.onclick = () => { currentPage = totalPages; renderTable(); };
+                paginationContainer.appendChild(lastBtn);
+            }
         }
 
-        // Update statistics
+        // 5. Fungsi Pencarian (Search)
+        function searchTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            currentPage = 1; // Reset ke hal 1 saat mengetik
+            filteredData = originalData.filter(item => 
+                item.nama.toLowerCase().includes(searchTerm) ||
+                item.kode.toLowerCase().includes(searchTerm)
+            );
+            renderTable();
+        }
+
+        // 6. Fungsi Urutkan (Sort)
+        function sortTable() {
+            const sortType = document.getElementById('sortSelect').value;
+            currentPage = 1;
+
+            switch(sortType) {
+                case 'nama-asc': filteredData.sort((a, b) => a.nama.localeCompare(b.nama)); break;
+                case 'nama-desc': filteredData.sort((a, b) => b.nama.localeCompare(a.nama)); break;
+                case 'stock-high': filteredData.sort((a, b) => b.stock - a.stock); break;
+                case 'stock-low': filteredData.sort((a, b) => a.stock - b.stock); break;
+                default: filteredData = [...originalData];
+            }
+            renderTable();
+        }
+
+        // Fungsi Pembantu
+        function formatTanggal(tgl) {
+            if(!tgl) return '-';
+            const d = new Date(tgl);
+            return d.toLocaleDateString('id-ID');
+        }
+
         function updateStats() {
-            const total = 79; // Total barang di master
-            const complete = stockData.length;
+            const total = {{ $totalBarang }};
+            const complete = originalData.filter(item => item.stock > 0).length;
             const incomplete = total - complete;
-            const percentage = (complete / total) * 100;
+            const percentage = (total > 0) ? (complete / total) * 100 : 0;
 
             document.getElementById('statsComplete').textContent = `${complete} / ${total}`;
             document.getElementById('statsIncomplete').textContent = incomplete;
             document.getElementById('progressBar').style.width = `${percentage}%`;
-
-            if (incomplete === 0) {
-                document.getElementById('alertComplete').innerHTML = `
-                    <svg fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                    </svg>
-                    <p>Semua barang sudah diatur</p>
-                `;
-                document.getElementById('alertComplete').className = 'alert-info';
-            } else {
-                document.getElementById('alertComplete').innerHTML = `
-                    <svg fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                    </svg>
-                    <p>Masih ada ${incomplete} barang yang belum diatur</p>
-                `;
-                document.getElementById('alertComplete').className = 'alert-warning';
-            }
         }
 
-        // Search table
-        function searchTable() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = originalData.filter(item => 
-                item.nama.toLowerCase().includes(searchTerm) ||
-                item.kode.toLowerCase().includes(searchTerm) ||
-                item.satuan.toLowerCase().includes(searchTerm)
-            );
-            renderTable(filtered);
-        }
+        function showAddModal() { document.getElementById('addModal').style.display = 'flex'; }
+        function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+        function confirmLogout() { window.location.href = '/'; }
 
-        // Sort table
-        function sortTable() {
-            const sortType = document.getElementById('sortSelect').value;
-            let sorted = [...stockData];
-
-            switch(sortType) {
-                case 'nama-asc':
-                    sorted.sort((a, b) => a.nama.localeCompare(b.nama));
-                    break;
-                case 'nama-desc':
-                    sorted.sort((a, b) => b.nama.localeCompare(a.nama));
-                    break;
-                case 'tanggal-newest':
-                    sorted.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-                    break;
-                case 'tanggal-oldest':
-                    sorted.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
-                    break;
-                case 'stock-high':
-                    sorted.sort((a, b) => b.stock - a.stock);
-                    break;
-                case 'stock-low':
-                    sorted.sort((a, b) => a.stock - b.stock);
-                    break;
-                default:
-                    sorted = [...originalData];
-            }
-
-            stockData = sorted;
+        
+        document.addEventListener('DOMContentLoaded', () => {
             renderTable();
-        }
+        });
 
-        // Download template Excel
-        function downloadTemplate() {
-            // Simulasi download template
-            const csvContent = "No,Kode Barang,Nama Barang,Satuan,Stock Awal,Keterangan\n" +
-                "1,10103020020026,Kertas Concorde A4,pak,0,\n" +
-                "2,10103010120002,Staples Joyko HD-50,buah,0,\n" +
-                "3,10103040040101,Tinta Epson 008 (BK),buah,0,\n" +
-                "4,10103010100027,Double tape - 3M stron,buah,0,\n" +
-                "5,10103010100026,Selotip Daimaru 1 inch,buah,0,";
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'Template_Stock_Awal_Tahun_2026.csv');
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const slider = document.querySelector('.pagination-wrapper');
+            let isDown = false;
+            let startX;
+            let scrollLeft;
 
-        // Modal functions
-        function showAddModal() {
-            document.getElementById('addModal').style.display = 'flex';
-        }
+            slider.addEventListener('mousedown', (e) => {
+                isDown = true;
+                slider.style.cursor = 'grabbing';
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
 
-        function closeAddModal() {
-            document.getElementById('addModal').style.display = 'none';
-            document.getElementById('stockForm').reset();
-            document.getElementById('kodeBarang').value = '';
-        }
+            slider.addEventListener('mouseleave', () => {
+                isDown = false;
+                slider.style.cursor = 'grab';
+            });
+
+            slider.addEventListener('mouseup', () => {
+                isDown = false;
+                slider.style.cursor = 'grab';
+            });
+
+            slider.addEventListener('mousemove', (e) => {
+                if (!isDown) return; // Berhenti jika mouse tidak ditekan
+                e.preventDefault();
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 2; // Kecepatan geser
+                slider.scrollLeft = scrollLeft - walk;
+            });
+        });
 
         function updateBarangInfo() {
             const select = document.getElementById('barangSelect');
-            const selectedValue = select.value;
+            const selectedOption = select.options[select.selectedIndex];
             
-            if (selectedValue) {
-                const [kode, nama] = selectedValue.split('|');
-                document.getElementById('kodeBarang').value = kode;
+            const kodeInput = document.getElementById('kodeBarangInput');
+            const satuanInput = document.getElementById('satuanInput');
+
+            if (selectedOption.value !== "") {
+                // Ambil data dari atribut 'data-' yang kita buat di tag <option>
+                const kode = selectedOption.getAttribute('data-kode');
+                const satuan = selectedOption.getAttribute('data-satuan');
+
+                kodeInput.value = kode;
+                satuanInput.value = satuan;
             } else {
-                document.getElementById('kodeBarang').value = '';
+                kodeInput.value = "";
+                satuanInput.value = "";
             }
         }
-
-        function submitForm(event) {
-            event.preventDefault();
-            
-            const barangSelect = document.getElementById('barangSelect');
-            const [kode, nama] = barangSelect.value.split('|');
-            const satuan = document.getElementById('satuan').value;
-            const stock = parseInt(document.getElementById('stockAwal').value);
-            const keterangan = document.getElementById('keterangan').value || '-';
-
-            const newStock = {
-                id: stockData.length + 1,
-                kode: kode,
-                nama: nama,
-                satuan: satuan,
-                stock: stock,
-                tanggal: new Date().toISOString().split('T')[0],
-                keterangan: keterangan
-            };
-
-            stockData.push(newStock);
-            originalData.push(newStock);
-            
-            renderTable();
-            closeAddModal();
-            
-            alert('Stock awal berhasil ditambahkan!');
-        }
-
-        function editStock(id) {
-            alert('Edit stock barang ID: ' + id);
-        }
-
-        function deleteStock(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus data stock ini?')) {
-                stockData = stockData.filter(item => item.id !== id);
-                originalData = originalData.filter(item => item.id !== id);
-                renderTable();
-                alert('Stock berhasil dihapus!');
-            }
-        }
-
-        // Logout Modal
-        function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-        }
-
-        function closeLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-        }
-
-        function confirmLogout() {
-            window.location.href = '/';
-        }
-
-        // Close modals on outside click
-        window.onclick = function(event) {
-            const addModal = document.getElementById('addModal');
-            const logoutModal = document.getElementById('logoutModal');
-            
-            if (event.target === addModal) {
-                closeAddModal();
-            }
-            if (event.target === logoutModal) {
-                closeLogoutModal();
-            }
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            renderTable();
-        });
     </script>
 </body>
 </html>

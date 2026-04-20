@@ -144,145 +144,33 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <!-- Data Row 1 -->
+                    @foreach($pegawais as $p)
                     <tr>
+                        <td><div class="item-name">{{ $p->nama }}</div></td>
+                        <td>{{ $p->id }}</td>
                         <td>
-                            <div class="item-name">Ahmad Fauzi</div>
-                        </td>
-                        <td>1</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn" onclick="viewItem(1)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
+                            <div class="action-buttons" style="display: flex; gap: 8px;">
+                                <!-- View -->
+                                <button class="action-btn view-btn" onclick="viewItem(@json($p))">
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                 </button>
-                                <button class="action-btn edit-btn" onclick="editItem(1)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
+                                
+                                <!-- Edit -->
+                                <button class="action-btn edit-btn" onclick="editItem(@json($p))">
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
                                 </button>
-                                <button class="action-btn delete-btn" onclick="deleteItem(1)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
 
-                    <!-- Data Row 2 -->
-                    <tr>
-                        <td>
-                            <div class="item-name">Siti Aminah</div>
-                        </td>
-                        <td>2</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn" onclick="viewItem(2)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn edit-btn" onclick="editItem(2)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn delete-btn" onclick="deleteItem(2)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
+                                <!-- Delete -->
+                                <form action="{{ route('pegawai.destroy', $p->id) }}" method="POST" style="display:inline;">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Hapus pegawai ini?')">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
-
-                    <!-- Data Row 3 -->
-                    <tr>
-                        <td>
-                            <div class="item-name">Budi Santoso</div>
-                        </td>
-                        <td>3</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn" onclick="viewItem(3)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn edit-btn" onclick="editItem(3)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn delete-btn" onclick="deleteItem(3)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Data Row 4 -->
-                    <tr>
-                        <td>
-                            <div class="item-name">Dewi Lestari</div>
-                        </td>
-                        <td>4</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn" onclick="viewItem(4)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn edit-btn" onclick="editItem(4)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn delete-btn" onclick="deleteItem(4)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Data Row 5 -->
-                    <tr>
-                        <td>
-                            <div class="item-name">Eko Prasetyo</div>
-                        </td>
-                        <td>5</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn" onclick="viewItem(5)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn edit-btn" onclick="editItem(5)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn delete-btn" onclick="deleteItem(5)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
@@ -300,17 +188,21 @@
                 </button>
             </div>
 
-            <form id="pegawaiForm" onsubmit="submitForm(event)">
+            <form id="pegawaiForm" method="POST" action="{{ route('pegawai.store') }}">
+                @csrf
+                <div id="methodField"></div> <!-- Tempat untuk @method('PUT') saat edit -->
+
                 <div class="form-group">
                     <label>Nama Pegawai <span>*</span></label>
-                    <input type="text" id="namaPegawai" placeholder="Masukkan nama pegawai" required>
+                    <!-- Tambahkan name="nama" -->
+                    <input type="text" name="nama" id="namaPegawai" placeholder="Masukkan nama pegawai" required>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>ID Pegawai <span>*</span></label>
-                        <input type="text" id="idPegawai" placeholder="1" required>
-                    </div>
+                <!-- ID Pegawai biasanya otomatis dari sistem (Auto Increment), 
+                    jadi di form 'Tambah' ini bisa dihapus atau dibuat readonly -->
+                <div class="form-group">
+                    <label>ID Pegawai (Otomatis)</label>
+                    <input type="text" id="idPegawai" placeholder="Akan terisi otomatis" readonly style="background: #f3f4f6;">
                 </div>
 
                 <div class="modal-buttons">
@@ -340,86 +232,100 @@
         </div>
     </div>
 
-    <script>
-        // Modal Functions
-        function showAddModal() {
-            document.getElementById('modalTitle').textContent = 'Tambah Pegawai Baru';
-            document.getElementById('pegawaiForm').reset();
-            document.getElementById('addModal').style.display = 'flex';
+ <script>
+    // 1. Fungsi Buka Modal Tambah
+    function showAddModal() {
+        // Pastikan elemen ada sebelum diakses agar tidak error
+        const modalTitle = document.getElementById('modalTitle');
+        const form = document.getElementById('pegawaiForm');
+        const methodField = document.getElementById('methodField');
+        const addModal = document.getElementById('addModal');
+        const idGroup = document.getElementById('idGroup');
+
+        if (modalTitle) modalTitle.textContent = 'Tambah Pegawai Baru';
+        if (form) {
+            form.action = "{{ route('pegawai.store') }}";
+            form.reset();
         }
+        if (methodField) methodField.innerHTML = ''; // Pastikan tidak ada @method('PUT')
+        if (idGroup) idGroup.style.display = 'none'; // Sembunyikan field ID
+        if (addModal) addModal.style.display = 'flex';
+    }
 
-        function closeAddModal() {
-            document.getElementById('addModal').style.display = 'none';
+    // 2. Fungsi Buka Modal Edit
+    function editItem(data) {
+        document.getElementById('modalTitle').textContent = 'Edit Pegawai';
+        document.getElementById('pegawaiForm').action = '/masterPegawai/' + data.id;
+        document.getElementById('methodField').innerHTML = '<input type="hidden" name="_method" value="PUT">';
+        
+        document.getElementById('namaPegawai').value = data.nama;
+        
+        // Tampilkan ID hanya untuk info (readonly)
+        const idGroup = document.getElementById('idGroup');
+        if (idGroup) {
+            idGroup.style.display = 'block';
+            document.getElementById('idPegawaiDisplay').value = data.id;
         }
+        
+        document.getElementById('addModal').style.display = 'flex';
+    }
 
-        function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-        }
+    // 3. Fungsi Buka Modal View
+    function viewItem(data) {
+        document.getElementById('v_id').textContent = data.id;
+        document.getElementById('v_nama').textContent = data.nama;
+        document.getElementById('viewModal').style.display = 'flex';
+    }
 
-        function closeLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-        }
+    // 4. Fungsi Tutup Modal
+    function closeAddModal() { 
+        document.getElementById('addModal').style.display = 'none'; 
+    }
+    function closeViewModal() { 
+        document.getElementById('viewModal').style.display = 'none'; 
+    }
 
-        function confirmLogout() {
-            window.location.href = '/';
-        }
-
-        // CRUD Functions
-        function viewItem(id) {
-            alert('Melihat detail pegawai ID: ' + id);
-        }
-
-        function editItem(id) {
-            document.getElementById('modalTitle').textContent = 'Edit Pegawai';
-            document.getElementById('addModal').style.display = 'flex';
-        }
-
-        function deleteItem(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus pegawai ini?')) {
-                alert('Pegawai ID ' + id + ' berhasil dihapus!');
-            }
-        }
-
-        function submitForm(event) {
-            event.preventDefault();
-            
-            const namaPegawai = document.getElementById('namaPegawai').value;
-            const idPegawai = document.getElementById('idPegawai').value;
-            const bagian = document.getElementById('bagian').value;
-
-            console.log({
-                namaPegawai,
-                idPegawai,
-                bagian
-            });
-
-            alert('Data pegawai berhasil disimpan!');
-            closeAddModal();
-        }
-
-        // Search Function
-        document.getElementById('searchInput').addEventListener('input', function(e) {
+    // 5. Pencarian
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const rows = document.querySelectorAll('#tableBody tr');
-            
             rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
+                row.style.display = row.textContent.toLowerCase().includes(searchTerm) ? '' : 'none';
             });
         });
+    }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const addModal = document.getElementById('addModal');
-            const logoutModal = document.getElementById('logoutModal');
-            
-            if (event.target === addModal) {
-                closeAddModal();
-            }
-            if (event.target === logoutModal) {
-                closeLogoutModal();
-            }
+    // 6. Klik Luar Modal untuk Tutup
+    window.onclick = function(event) {
+        if (event.target.className === 'modal-overlay') {
+            closeAddModal();
+            closeViewModal();
+            if (typeof closeLogoutModal === 'function') closeLogoutModal();
         }
-    </script>
+    }
+
+    // Fungsi Logout
+    function showLogoutModal() { document.getElementById('logoutModal').style.display = 'flex'; }
+    function closeLogoutModal() { document.getElementById('logoutModal').style.display = 'none'; }
+    function confirmLogout() { window.location.href = '/'; }
+</script>
+
+    <div id="viewModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Detail Pegawai</h2>
+                <button class="close-btn" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div style="padding: 20px 0; text-align: left;">
+                <p style="margin-bottom: 10px;"><strong>ID:</strong> <span id="v_id"></span></p>
+                <p><strong>Nama:</strong> <span id="v_nama"></span></p>
+            </div>
+            <div style="text-align: right;">
+                <button onclick="closeViewModal()" class="modal-btn cancel-btn" style="width: auto; padding: 10px 20px;">Tutup</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Pengambilan Barang</title>
     <link rel="stylesheet" href="{{ asset('assets/css/pengambilan.css') }}">
+    <style>
+        select, option {
+            color: #333 !important; 
+            background-color: #fff !important; 
+        }
+        select:focus {
+            color: #333 !important;
+        }
+    </style>
 </head>
     
 <body>
@@ -15,12 +24,29 @@
             <h1>BADAN PUSAT STATISTIK KOTA SEMARANG</h1>
         </div>
 
+        @if(session('success'))
+            <div style="background: #d1fae5; color: #065f46; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #10b981;">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div style="background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <ul>
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <!-- Page Title -->
         <h2 class="page-title">Form Pengambilan Barang Alat Tulis Kantor</h2>
 
         <!-- Form Card -->
         <div class="form-card">
-            <form id="pengambilanForm" method="POST" action="#">
+            <form id="pengambilanForm" method="POST" action="/simpan-pengambilan">
+                @csrf
                 <!-- Data Pengambilan Barang Section -->
                 <div class="section-header">
                     <svg fill="currentColor" viewBox="0 0 20 20">
@@ -33,13 +59,11 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="namaPegawai">Nama Pegawai</label>
-                            <select id="namaPegawai" name="pegawai_id" required>
-                                <option value="">Nama Pegawai</option>
-                                <option value="1">Ahmad Fauzi</option>
-                                <option value="2">Siti Aminah</option>
-                                <option value="3">Budi Santoso</option>
-                                <option value="4">Dewi Lestari</option>
-                                <option value="5">Eko Prasetyo</option>
+                            <select id="namaPegawai" name="nama_pegawai" required>
+                                <option value="">Pilih Nama Pegawai</option>
+                                @foreach($pegawais as $p)
+                                    <option value="{{ $p->nama }}">{{ $p->nama }}</option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -57,16 +81,15 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="listBarang">List Barang</label>
-                            <select id="listBarang" name="barang_id" required onchange="checkStock()">
-                                <option value="">Nama Barang</option>
-                                <option value="1" data-stock="50" data-nama="Pulpen Biru Standard">Pulpen Biru Standard</option>
-                                <option value="2" data-stock="100" data-nama="Kertas A4 80gsm">Kertas A4 80gsm</option>
-                                <option value="3" data-stock="3" data-nama="Spidol Whiteboard">Spidol Whiteboard</option>
-                                <option value="4" data-stock="0" data-nama="Penghapus">Penghapus</option>
-                                <option value="5" data-stock="25" data-nama="Staples">Staples</option>
-                                <option value="6" data-stock="2" data-nama="Paper Clip">Paper Clip</option>
-                                <option value="7" data-stock="0" data-nama="Lem Kertas">Lem Kertas</option>
-                                <option value="8" data-stock="150" data-nama="Map Plastik">Map Plastik</option>
+                            <select id="listBarang" name="nama_barang" required onchange="checkStock()">
+                                <option value="">Pilih Nama Barang</option>
+                                @foreach($barangs as $b)
+                                    <option value="{{ $b->nama_barang }}" 
+                                            data-stock="{{ $b->stok }}" 
+                                            data-nama="{{ $b->nama_barang }}">
+                                        {{ $b->nama_barang }} 
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -348,17 +371,16 @@
                 alert('✅ Form berhasil disubmit!\n\nPengambilan barang telah dicatat.');
                 
                 // Reset form
-                this.reset();
-                clearSignature();
+        
                 document.getElementById('stockAlert').style.display = 'none';
                 document.getElementById('jumlah').disabled = false;
                 
-                // Set tanggal ke hari ini lagi
+                
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('tanggal').value = today;
+                document.getElementById('tandaTanganData').value = canvas.toDataURL();
                 
-                // Untuk submit ke Laravel, uncomment baris ini:
-                // this.submit();
+                this.submit();
             }
         });
     </script>

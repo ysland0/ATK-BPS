@@ -147,120 +147,43 @@
                         <th style="width: 130px;">Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="tableBody">
-                    <!-- Data Row 1 -->
+                <tbody>
+                    @foreach($suppliers as $index => $s)
                     <tr>
-                        <td>1</td>
-                        <td>SUP-001</td>
-                        <td>
-                            <div class="supplier-name">PT. Maju Jaya</div>
-                            <div class="supplier-category">Alat Tulis</div>
-                        </td>
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $s->kode_supplier }}</td>
+                        <td><div class="supplier-name">{{ $s->nama_supplier }}</div></td>
                         <td>
                             <div class="pic-info">
-                                <span class="pic-name">Budi Hartono</span>
-                                <span class="pic-phone">0812-3456-7890</span>
+                                <span class="pic-name">{{ $s->nama_pic }}</span>
+                                <span class="pic-phone">{{ $s->telp_pic }}</span>
                             </div>
                         </td>
-                        <td>Jl. Sudirman No. 123, Jakarta</td>
-                        <td>contact@majujaya.com</td>
+                        <td>{{ $s->alamat }}</td>
+                        <td>{{ $s->email }}</td>
                         <td>
                             <div class="action-buttons">
-                                <button class="action-btn view-btn" onclick="viewItem(1)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
+                                <!-- View -->
+                                <button class="action-btn view-btn" onclick="viewItem(@json($s))">
+                                    <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
                                 </button>
-                                <button class="action-btn edit-btn" onclick="editItem(1)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
+                                
+                                <!-- Edit -->
+                                <button class="action-btn edit-btn" onclick="editItem(@json($s))">
+                                    <svg fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
                                 </button>
-                                <button class="action-btn delete-btn" onclick="deleteItem(1)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
 
-                    <!-- Data Row 2 -->
-                    <tr>
-                        <td>2</td>
-                        <td>SUP-002</td>
-                        <td>
-                            <div class="supplier-name">CV. Karya Mandiri</div>
-                            <div class="supplier-category">Kertas & Printing</div>
-                        </td>
-                        <td>
-                            <div class="pic-info">
-                                <span class="pic-name">Siti Rahayu</span>
-                                <span class="pic-phone">0856-7890-1234</span>
-                            </div>
-                        </td>
-                        <td>Jl. Ahmad Yani No. 45, Surabaya</td>
-                        <td>info@karyamandiri.co.id</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn" onclick="viewItem(2)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn edit-btn" onclick="editItem(2)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn delete-btn" onclick="deleteItem(2)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
+                                <!-- Delete -->
+                                <form action="{{ route('supplier.destroy', $s->id) }}" method="POST" style="display:inline;">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Hapus?')">
+                                        <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
-
-                    <!-- Data Row 3 -->
-                    <tr>
-                        <td>3</td>
-                        <td>SUP-003</td>
-                        <td>
-                            <div class="supplier-name">UD. Sumber Rejeki</div>
-                            <div class="supplier-category">Perlengkapan Kantor</div>
-                        </td>
-                        <td>
-                            <div class="pic-info">
-                                <span class="pic-name">Ahmad Fauzi</span>
-                                <span class="pic-phone">0821-9876-5432</span>
-                            </div>
-                        </td>
-                        <td>Jl. Gatot Subroto No. 78, Bandung</td>
-                        <td>sales@sumberrejeki.net</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn" onclick="viewItem(3)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn edit-btn" onclick="editItem(3)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
-                                </button>
-                                <button class="action-btn delete-btn" onclick="deleteItem(3)">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
@@ -278,48 +201,44 @@
                 </button>
             </div>
 
-            <form id="supplierForm" onsubmit="submitForm(event)">
-                <!-- Informasi Supplier -->
+            <form id="supplierForm" method="POST" action="{{ route('supplier.store') }}">
+                @csrf
+                <div id="methodField"></div> 
+                
                 <div class="form-section-title">Informasi Supplier</div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Kode Supplier <span>*</span></label>
-                        <input type="text" id="kodeSupplier" placeholder="SUP-001" required>
+                        <input type="text" name="kode_supplier" id="kodeSupplier"  placeholder="SUP-001" required> 
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Nama Supplier <span>*</span></label>
-                    <input type="text" id="namaSupplier" placeholder="Masukkan nama supplier" required>
+                    <input type="text" name="nama_supplier" id="namaSupplier" placeholder="Masukkan nama supplier" required>
                 </div>
 
-                <!-- Informasi PIC / Contact -->
                 <div class="form-section-title">Informasi PIC / Contact</div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nama PIC <span>*</span></label>
-                        <input type="text" id="namaPIC" placeholder="Nama person in charge" required>
+                        <input type="text" name="nama_pic" id="namaPIC" placeholder="Nama person in charge" required>
                     </div>
-
                     <div class="form-group">
                         <label>No Telepon PIC <span>*</span></label>
-                        <input type="tel" id="telpPIC" placeholder="0812-xxxx-xxxx" required>
+                        <input type="tel" name="telp_pic" id="telpPIC" placeholder="0811-xxxx-xxxx" required>
                     </div>
                 </div>
 
-                <!-- Alamat & Email -->
                 <div class="form-section-title">Alamat & Kontak</div>
-
                 <div class="form-group">
                     <label>Alamat Kantor Supplier <span>*</span></label>
-                    <textarea id="alamat" placeholder="Masukkan alamat lengkap kantor supplier" required></textarea>
+                    <textarea name="alamat" id="alamat" placeholder="Masukkan alamat lengkap kantor supplier" required></textarea>
                 </div>
 
                 <div class="form-group">
                     <label>Email <span>*</span></label>
-                    <input type="email" id="email" placeholder="email@supplier.com" required>
+                    <input type="email" name="email" id="email" placeholder="Masukkan email supplier" required>
                 </div>
 
                 <div class="modal-buttons">
@@ -349,92 +268,74 @@
         </div>
     </div>
 
+    <div id="viewModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Detail Supplier</h2>
+                <button class="close-btn" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div id="viewContent" style="padding: 20px 0; text-align: left;">
+                <!-- Data akan diisi via JS -->
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Modal Functions
+        // Modal Tambah
         function showAddModal() {
             document.getElementById('modalTitle').textContent = 'Tambah Supplier Baru';
+            document.getElementById('supplierForm').action = "{{ route('supplier.store') }}";
+            document.getElementById('methodField').innerHTML = '';
             document.getElementById('supplierForm').reset();
             document.getElementById('addModal').style.display = 'flex';
         }
 
-        function closeAddModal() {
-            document.getElementById('addModal').style.display = 'none';
-        }
-
-        function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-        }
-
-        function closeLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-        }
-
-        function confirmLogout() {
-            window.location.href = '/';
-        }
-
-        // CRUD Functions
-        function viewItem(id) {
-            alert('Melihat detail supplier ID: ' + id);
-        }
-
-        function editItem(id) {
+        // Modal Edit
+        function editItem(data) {
             document.getElementById('modalTitle').textContent = 'Edit Supplier';
+            document.getElementById('supplierForm').action = '/masterSupplier/' + data.id;
+            document.getElementById('methodField').innerHTML = '@method("PUT")';
+            
+            document.getElementById('kodeSupplier').value = data.kode_supplier;
+            document.getElementById('namaSupplier').value = data.nama_supplier;
+            document.getElementById('namaPIC').value = data.nama_pic;
+            document.getElementById('telpPIC').value = data.telp_pic;
+            document.getElementById('alamat').value = data.alamat;
+            document.getElementById('email').value = data.email;
+            
             document.getElementById('addModal').style.display = 'flex';
         }
 
-        function deleteItem(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus supplier ini?')) {
-                alert('Supplier ID ' + id + ' berhasil dihapus!');
-            }
+        // Modal View
+        function viewItem(data) {
+            const content = `
+                <p><strong>Kode:</strong> ${data.kode_supplier}</p>
+                <p><strong>Nama:</strong> ${data.nama_supplier}</p>
+                <p><strong>PIC:</strong> ${data.nama_pic} (${data.telp_pic})</p>
+                <p><strong>Email:</strong> ${data.email}</p>
+                <p><strong>Alamat:</strong> ${data.alamat}</p>
+            `;
+            document.getElementById('viewContent').innerHTML = content;
+            document.getElementById('viewModal').style.display = 'flex';
         }
 
-        function submitForm(event) {
-            event.preventDefault();
-            
-            const kodeSupplier = document.getElementById('kodeSupplier').value;
-            const namaSupplier = document.getElementById('namaSupplier').value;
-            const kategori = document.getElementById('kategori').value;
-            const namaPIC = document.getElementById('namaPIC').value;
-            const telpPIC = document.getElementById('telpPIC').value;
-            const alamat = document.getElementById('alamat').value;
-            const email = document.getElementById('email').value;
-
-            console.log({
-                kodeSupplier,
-                namaSupplier,
-                kategori,
-                namaPIC,
-                telpPIC,
-                alamat,
-                email
-            });
-
-            alert('Data supplier berhasil disimpan!');
-            closeAddModal();
-        }
+        function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+        function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
 
         // Search Function
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const rows = document.querySelectorAll('#tableBody tr');
-            
             rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
+                row.style.display = row.textContent.toLowerCase().includes(searchTerm) ? '' : 'none';
             });
         });
 
-        // Close modal when clicking outside
+        // Close on outside click
         window.onclick = function(event) {
-            const addModal = document.getElementById('addModal');
-            const logoutModal = document.getElementById('logoutModal');
-            
-            if (event.target === addModal) {
+            if (event.target.className === 'modal-overlay') {
                 closeAddModal();
-            }
-            if (event.target === logoutModal) {
-                closeLogoutModal();
+                closeViewModal();
             }
         }
     </script>
