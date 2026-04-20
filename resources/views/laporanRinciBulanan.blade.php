@@ -56,7 +56,7 @@
                 </svg>
                 Pengambilan Barang
             </a>
-            <a href="/laporanRincibulanan" class="menu-item active">
+            <a href="/laporanRinciBulanan" class="menu-item active">
                 <svg fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                     <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
@@ -499,11 +499,6 @@
             
             XLSX.utils.book_append_sheet(wb, ws, `Laporan_${bulanNama[parseInt(bulan)]}_${tahun}`);
             XLSX.writeFile(wb, `Laporan_Bulanan_${bulan}_${tahun}.xlsx`);
-        }
-
-        // Export Google Sheets
-        function exportSheets() {
-            alert('Fitur export ke Google Sheets akan segera tersedia!');
         }
 
         // Logout Modal
