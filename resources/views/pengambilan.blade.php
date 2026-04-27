@@ -17,6 +17,14 @@
 </head>
     
 <body>
+
+    <div class="container">
+        <a href="/" class="back-link">
+            <svg fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+            </svg>
+            Kembali ke Beranda
+        </a>
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -61,7 +69,7 @@
                             <label for="namaPegawai">Nama Pegawai</label>
                             <select id="namaPegawai" name="nama_pegawai" required>
                                 <option value="">Pilih Nama Pegawai</option>
-                                @foreach($pegawais as $p)
+                                @foreach($pegawais as $p) 
                                     <option value="{{ $p->nama }}">{{ $p->nama }}</option>
                                 @endforeach
                             </select>
@@ -140,13 +148,6 @@
                 </button>
             </form>
         </div>
-
-       <!-- Admin Login Button -->
-        <div class="admin-login">
-            <button class="admin-login-btn" onclick="window.location.href='/login'">Login Admin</button>
-            <p>masuk sebagai admin</p>
-        </div>
-    </div>
 
     <script>
         // Set tanggal hari ini otomatis

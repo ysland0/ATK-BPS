@@ -8,15 +8,26 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\BarangController;
 
-Route::get('/', [PengambilanController::class, 'create'])->name('pengambilan.create');
+Route::get('/', function () {
+    return view('tampilan');
+})->name('tampilan');
 
 Route::get('/login', function () {
     return view('login');
 })->name('login');
 
+route::get('/pengambilan', function () {
+    return view('pengambilan');
+})->name('pengambilan');
+
+Route::get('/permohonan', function () {
+    return view('permohonan');
+})->name('permohonan');
+
 Route::get('/landingPage', function () {
     return view('landingPage');
 })->name('landingPage');
+
 
 Route::get('/dashboardPage', function () {
     return view('dashboardPage');
@@ -27,6 +38,8 @@ Route::resource('masterBarang', BarangController::class)->names([
     'store' => 'barang.store',
     'destroy' => 'barang.destroy'
 ]);
+
+Route::get('/pengambilan', [PengambilanController::class, 'create']);
 
 Route::get('/masterPegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
 Route::post('/masterPegawai', [PegawaiController::class, 'store'])->name('pegawai.store');
@@ -58,3 +71,7 @@ Route::get('/kartuKendali', function () {
 Route::get('/laporanRinciBulanan', function () {
     return view('laporanRinciBulanan');
 })->name('laporanRinciBulanan');
+
+Route::get('/permohonan', function () {
+    return view('permohonan');
+})->name('permohonan');
