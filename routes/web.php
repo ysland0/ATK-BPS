@@ -24,10 +24,9 @@ Route::get('/permohonan', function () {
     return view('permohonan');
 })->name('permohonan');
 
-Route::get('/landingPage', function () {
-    return view('landingPage');
-})->name('landingPage');
-
+Route::get('/pemasukanBarang', function () {
+    return view('pemasukanBarang');
+})->name('pemasukanBarang');
 
 Route::get('/dashboardPage', function () {
     return view('dashboardPage');
@@ -72,6 +71,7 @@ Route::get('/laporanRinciBulanan', function () {
     return view('laporanRinciBulanan');
 })->name('laporanRinciBulanan');
 
-Route::get('/permohonan', function () {
-    return view('permohonan');
-})->name('permohonan');
+
+Route::get('/laporanPermohonan', function () {
+    return view('laporanPermohonan');
+})->name('laporanPermohonan');
