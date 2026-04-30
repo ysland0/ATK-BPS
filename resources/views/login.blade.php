@@ -11,18 +11,14 @@
         <!-- Left Section -->
         <div class="left-section">
             <div class="logo-container">
-        <img src="{{ asset('assets/images/logoBPS.png') }}" alt="Logo BPS" class="logo">
-            <div class="logo-text">
-            BADAN PUSAT STATISTIK<br>
-            KOTA SEMARANG
-            </div>
+            <img src="{{ asset('assets/images/logoPresisi1.png') }}" alt="Logo presisi" class="logo">
         </div>
 
-        <a href="/dashboardPage" class="back-link">
+        <a href="/" class="back-link">
             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
             </svg>
-            Kembali ke pengisian
+            Kembali ke tampilan utama
         </a>
     </div>
 

@@ -112,30 +112,14 @@
         </a>
     </div>
 
-    <!-- Main Content -->
     <main class="main-content">
-        <!-- Header -->
-        <div class="page-header">
-            <div class="page-title">
-                <h1>Permohonan Barang</h1>
-                <p>Laporan Permohonan Barang</p>
-            </div>
-            <div class="header-actions">
-                <div class="search-box">
-                    <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <input type="text" placeholder="Carian..." id="searchInput" oninput="searchRequests()">
-                </div>
-                <button class="btn-filter">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
-                    </svg>
-                    Filter
-                </button>
-            </div>
+    <!-- Header -->
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Permohonan Barang</h1>
+            <p>Laporan Permohonan Barang</p>
         </div>
-
+    </div>
     <!-- Request Cards -->
         <div class="request-cards" id="requestCards">
             <!-- Card 1 -->
@@ -160,7 +144,7 @@
                         Ditolak
                     </button>
                 </div>
-            </div>
+                </div>
 
             <!-- Card 2 -->
             <div class="request-card" data-name="kertas hvs warna merah" data-employee="siti aminah">
@@ -210,12 +194,87 @@
                 </div>
             </div>
         </div>
+        <button class="btn-print" onclick="printPDF()">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"/>
+            </svg>
+            Print PDF
+        </button>
+        <!-- Alert Info -->
+        <div class="alert-info">
+            <svg fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <p>Print PDF Untuk mengajukan Laporan Permohonan Barang Kepada Pimpinan</p>
+        </div>
+    </div>
+
+        <!-- Print Template (Hidden) -->
+    <div class="print-container" id="printContainer" style="display: none;">
+        <div class="print-header">
+            <div class="print-logo">
+                <img src="{{ asset('assets/images/logoBPS.png') }}" alt="Logo BPS">
+                <div>
+                    <h3 style="margin: 0; font-size: 14px; font-weight: 700;">BADAN PUSAT STATISTIK</h3>
+                    <h3 style="margin: 0; font-size: 14px; font-weight: 700;">KOTA SEMARANG</h3>
+                </div>
+            </div>
+
+            <div class="print-title">
+                <h2>SURAT PERMOHONAN PERSEDIAAN BARANG</h2>
+                <h2>ATK/CETAKAN/DLL</h2>
+            </div>
+
+            <div class="print-info">
+                <div>
+                    <span>No : <span id="printNo">______</span></span>
+                </div>
+                <div>
+                    <span>Tahun: <span id="printYear">2026</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+        <div class="print-table-wrapper">
+            <table class="data-table" id="printTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No.</th>
+                        <th style="width: 25%;">Nama Barang</th>
+                        <th style="width: 20%;">Nama Peminta Barang</th>
+                    </tr>
+                </thead>
+                <tbody id="printTableBody">
+                    <!-- Will be filled by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="print-signatures" style="display: none;" id="printSignatures">
+            <div class="signature-block">
+                <p>Mengetahui</p>
+                <p class="date">Semarang, <span id="printDate">_____________</span></p>
+                <p style="margin-top: 50px; margin-bottom: 5px;">Kepala Subbagian Umum</p>
+                <br><br><br>
+                <p class="name">Ir. Rina Wulanjar</p>
+                <p class="nip">NIP. 19690120 199401 2 001</p>
+            </div>
+
+            <div class="signature-block">
+                <p>Petugas Persediaan</p>
+                <p style="margin-top: 50px; margin-bottom: 5px;">&nbsp;</p>
+                <br><br><br>
+                <p class="name">Hartanto Agoestijono</p>
+                <p class="nip">NIP. 19700802 199102 1 002</p>
+            </div>
+        </div>
 
         <!-- Data Table -->
         <div class="data-table-container">
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th>Nama Barang</th>
                         <th>Nama Pegawai</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -226,11 +285,12 @@
                         <td>
                             <div>
                                 <div style="font-weight: 600;">kertas HVS warna Merah</div>
-                                <div style="font-size: 13px; color: #718096;">Siti Aminah</div>
                             </div>
                         </td>
                         <td>
-                            <span class="status-badge status-selesai">Selesai</span>
+                            <div style="font-weight: 600;">Siti Aminah</div>
+                        <td>
+                            <span class="status-badge status-selesai">Diterima</span>
                         </td>
                         <td>
                             <div class="action-icons">
@@ -257,11 +317,12 @@
                         <td>
                             <div>
                                 <div style="font-weight: 600;">kertas HVS warna Merah</div>
-                                <div style="font-size: 13px; color: #718096;">Siti Aminah</div>
                             </div>
                         </td>
                         <td>
-                            <span class="status-badge status-selesai">Selesai</span>
+                            <div style="font-weight: 600;">Siti Aminah</div>
+                        <td>
+                            <span class="status-badge status-selesai">Diterima</span>
                         </td>
                         <td>
                             <div class="action-icons">
@@ -288,11 +349,12 @@
                         <td>
                             <div>
                                 <div style="font-weight: 600;">kertas HVS warna Merah</div>
-                                <div style="font-size: 13px; color: #718096;">Siti Aminah</div>
                             </div>
                         </td>
                         <td>
-                            <span class="status-badge status-selesai">Selesai</span>
+                            <div style="font-weight: 600;">Siti Aminah</div>
+                        <td>
+                            <span class="status-badge status-selesai">Diterima</span>
                         </td>
                         <td>
                             <div class="action-icons">
@@ -338,6 +400,151 @@
     </main>
 
     <script>
+        // Print PDF Function
+        function printPDF() {
+            const tableRows = document.querySelectorAll('#tableBody tr');
+            const acceptedItems = [];
+            
+            // Collect accepted items
+            tableRows.forEach(row => {
+                const statusBadge = row.querySelector('.status-badge');
+                if (statusBadge && statusBadge.textContent.trim() === 'Diterima') {
+                    const itemName = row.querySelector('td div div:first-child').textContent.trim();
+                    const employeeName = row.querySelector('td div div:last-child').textContent.trim();
+                    acceptedItems.push({ itemName, employeeName });
+                }
+            });
+            
+            if (acceptedItems.length === 0) {
+                alert('⚠️ Tidak ada permohonan dengan status "Diterima" untuk dicetak!');
+                return;
+            }
+            
+            // Generate print pages
+            const printContainer = document.getElementById('printContainer');
+            printContainer.innerHTML = '';
+            
+            const itemsPerPage = 10; // Maximum items per page
+            const totalPages = Math.ceil(acceptedItems.length / itemsPerPage);
+            
+            for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+                const startIdx = pageNum * itemsPerPage;
+                const endIdx = Math.min(startIdx + itemsPerPage, acceptedItems.length);
+                const pageItems = acceptedItems.slice(startIdx, endIdx);
+                
+                const page = createPrintPage(pageItems, pageNum + 1, startIdx);
+                printContainer.appendChild(page);
+            }
+            
+            // Print
+            setTimeout(() => {
+                window.print();
+            }, 100);
+        }
+
+        // Create a print page
+        function createPrintPage(items, pageNumber, startIndex) {
+            const today = new Date();
+            const day = today.getDate();
+            const month = today.toLocaleDateString('id-ID', { month: 'long' });
+            const year = today.getFullYear();
+            
+            const page = document.createElement('div');
+            page.className = 'print-page';
+            
+            page.innerHTML = `
+                <div class="print-header">
+                    <div class="print-logo">
+                        <img src="{{ asset('assets/images/logoBPS.png') }}" alt="Logo BPS" onerror="this.style.display='none'">
+                        <div class="print-logo-text">
+                            <h3>BADAN PUSAT STATISTIK</h3>
+                            <h3>KOTA SEMARANG</h3>
+                        </div>
+                    </div>
+
+                    <div class="print-title">
+                        <h2>SURAT PERMOHONAN PERSEDIAAN BARANG</h2>
+                        <h2>ATK/CETAKAN/DLL</h2>
+                    </div>
+
+                    <div class="print-info">
+                        <div>No : <strong>${generateDocNumber()}</strong></div>
+                        <div>Tahun: <strong>${day}/${today.getMonth() + 1}/${year}</strong></div>
+                    </div>
+                </div>
+
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Nama Barang</th>
+                            <th>Nama Peminta Barang</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${generateTableRows(items, startIndex)}
+                    </tbody>
+                </table>
+
+                ${pageNumber === 1 ? generateSignatures(day, month, year) : ''}
+            `;
+            
+            return page;
+        }
+
+        // Generate table rows
+        function generateTableRows(items, startIndex) {
+            let rows = '';
+            
+            items.forEach((item, index) => {
+                rows += `
+                    <tr>
+                        <td style="text-align: center;">${startIndex + index + 1}</td>
+                        <td>${item.itemName}</td>
+                        <td>${item.employeeName}</td>
+                    </tr>
+                `;
+            });
+            
+            return rows;
+        }
+
+        // Generate signatures (only on first page)
+        function generateSignatures(day, month, year) {
+            return `
+                <div class="print-signatures">
+                    <div class="signature-block">
+                        <p class="title">Mengetahui</p>
+                        <p class="jabatan">Kepala Subbagian Umum</p>
+
+                        <div class="ttd-space"></div>
+
+                        <p class="name">Ir. Rina Wulanjar</p>
+                        <p class="nip">NIP. 19690120 199401 2 001</p>
+                    </div>
+
+                    <div class="signature-block">
+                        <p class="date invisible">Semarang, ${day} ${month} ${year}</p>
+                        <p class="jabatan">Petugas Persediaan</p>
+
+                        <div class="ttd-space"></div>
+
+                        <p class="name">Hartanto Agoestijono</p>
+                        <p class="nip">NIP. 19700802 199102 1 002</p>
+                    </div>
+                </div>
+            `;
+        }
+
+
+        // Generate document number (keep existing function)
+        function generateDocNumber() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const random = Math.floor(Math.random() * 1000);
+            return `3374-${random}`;
+        }        
+
         // Search functionality
         function searchRequests() {
             const searchValue = document.getElementById('searchInput').value.toLowerCase();
