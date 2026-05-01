@@ -564,28 +564,74 @@
 
         // Selesai action
         function selesaiRequest(button) {
-            if (confirm('Tandai permohonan ini sebagai selesai?')) {
-                const card = button.closest('.request-card');
+            const card = button.closest('.request-card');
+            const namaBarang = card.querySelector('.request-details h3').textContent.trim();
+
+            if (confirm('Setujui permohonan "' + namaBarang + '"?')) {
                 card.style.opacity = '0.5';
-                
+
                 setTimeout(() => {
                     card.remove();
-                    alert('✅ Permohonan berhasil diselesaikan!');
+                    showAlert('success', '✓ Disetujui!', '"' + namaBarang + '" telah berhasil disetujui.');
                 }, 300);
             }
         }
 
         // Tolak action
         function tolakRequest(button) {
-            if (confirm('Tolak permohonan ini?')) {
-                const card = button.closest('.request-card');
+            const card = button.closest('.request-card');
+            const namaBarang = card.querySelector('.request-details h3').textContent.trim();
+
+            if (confirm('Tolak permohonan "' + namaBarang + '"?')) {
                 card.style.opacity = '0.5';
-                
+
                 setTimeout(() => {
                     card.remove();
-                    alert('❌ Permohonan ditolak!');
+                    showAlert('danger', '✕ Ditolak!', '"' + namaBarang + '" telah ditolak.');
                 }, 300);
             }
+        }
+
+        // Alert notification
+        function showAlert(type, title, message) {
+            const existing = document.querySelector('.custom-alert');
+            if (existing) existing.remove();
+
+            const colors = {
+                success: { bg: '#d1fae5', border: '#6ee7b7', text: '#065f46' },
+                danger:  { bg: '#fee2e2', border: '#fca5a5', text: '#991b1b' }
+            };
+
+            const alert = document.createElement('div');
+            alert.className = 'custom-alert';
+            alert.style.cssText = `
+                position: fixed;
+                top: 24px;
+                right: 24px;
+                z-index: 99999;
+                background: ${colors[type].bg};
+                border: 1.5px solid ${colors[type].border};
+                color: ${colors[type].text};
+                border-radius: 10px;
+                padding: 14px 20px;
+                min-width: 300px;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+                font-size: 14px;
+                animation: slideIn 0.3s ease;
+            `;
+
+            alert.innerHTML = `
+                <div style="font-weight: 600; font-size: 15px; margin-bottom: 4px;">${title}</div>
+                <div>${message}</div>
+            `;
+
+            document.body.appendChild(alert);
+
+            setTimeout(function() {
+                alert.style.transition = 'opacity 0.4s';
+                alert.style.opacity = '0';
+                setTimeout(function() { alert.remove(); }, 400);
+            }, 3000);
         }
 
         // View request
