@@ -278,6 +278,7 @@
                             <th>Nama Barang</th>
                             <th>Satuan</th>
                             <th>Total Diambil</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>

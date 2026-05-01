@@ -178,7 +178,7 @@
 
         <!-- Activity Section -->
         <div class="activity-section">
-            <h2 class="activity-header">Aktivitas Terbaru</h2>
+            <h2 class="activity-header">Aktivitas Pengambilan Barang Terbaru</h2>
             <div class="activity-list">
                 <!-- Activity Item 1 - Approved -->
                 <div class="activity-item">
@@ -192,7 +192,11 @@
                         <div class="activity-title">Ahmad Fauzi - Pulpen Biru</div>
                         <div class="activity-desc">Mengambil 5 unit Pulpen Biru - 03 Feb 2026, 14:30</div>
                     </div>
-                  </div>
+                    <div class="activity-actions">
+                            <button class="btn-approve">✓ Setujui</button>
+                            <button class="btn-reject">✕ Tolak</button>
+                    </div>
+                </div>
 
                 <!-- Activity Item 2 - In Negotiation (Pending) -->
                 <div class="activity-item">
@@ -203,8 +207,13 @@
                         </svg>
                     </div>
                     <div class="activity-content">
-                        <div class="activity-title">Siti Aminah - Kertas A4</div>
-                        <div class="activity-desc">Mengambil 2 rim Kertas A4 - 03 Feb 2026, 13:15</div>
+                        <div class="activity-title">Ahmad Fauzi - Pulpen Biru</div>
+                        <div class="activity-desc">Mengambil 5 unit Pulpen Biru - 03 Feb 2026, 14:30</div>
+                    </div>
+                    <div class="activity-actions">
+                            <button class="btn-approve">✓ Setujui</button>
+                            <button class="btn-reject">✕ Tolak</button>
+                    </div>
                     </div>
                 </div>
 
@@ -217,12 +226,15 @@
                         </svg>
                     </div>
                     <div class="activity-content">
-                        <div class="activity-title">Budi Santoso - Spidol Hitam</div>
-                        <div class="activity-desc">Mengambil 3 unit Spidol Hitam - 03 Feb 2026, 11:45 (Tidak ada tanda tangan)</div>
+                        <div class="activity-title">Ahmad Fauzi - Pulpen Biru</div>
+                        <div class="activity-desc">Mengambil 5 unit Pulpen Biru - 03 Feb 2026, 14:30</div>
                     </div>
-                </div>
-
-                <!-- Activity Item 4 - Approved -->
+                    <div class="activity-actions">
+                            <button class="btn-approve">✓ Setujui</button>
+                            <button class="btn-reject">✕ Tolak</button>
+                    </div>
+                    </div>
+                    <!-- Activity Item 4 - Approved -->
                 <div class="activity-item">
                     <div class="activity-icon">
                         <svg fill="currentColor" viewBox="0 0 20 20">
@@ -231,26 +243,106 @@
                         </svg>
                     </div>
                     <div class="activity-content">
-                        <div class="activity-title">Dewi Lestari - Penghapus</div>
-                        <div class="activity-desc">Mengambil 10 unit Penghapus - 03 Feb 2026, 09:20</div>
+                        <div class="activity-title">Ahmad Fauzi - Pulpen Biru</div>
+                        <div class="activity-desc">Mengambil 5 unit Pulpen Biru - 03 Feb 2026, 14:30</div>
                     </div>
-                </div>
+                    <div class="activity-actions">
+                            <button class="btn-approve">✓ Setujui</button>
+                            <button class="btn-reject">✕ Tolak</button>
+                    </div>
+                    </div>
 
-                <!-- Activity Item 5 - Rejected -->
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
+                    <!-- Activity Item 5 - Rejected -->
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="activity-content">
+                        <div class="activity-title">Ahmad Fauzi - Pulpen Biru</div>
+                        <div class="activity-desc">Mengambil 5 unit Pulpen Biru - 03 Feb 2026, 14:30</div>
                     </div>
-                    <div class="activity-content">
-                        <div class="activity-title">Eko Prasetyo - Staples</div>
-                        <div class="activity-desc">Mengambil 1 box Staples - 03 Feb 2026, 08:30 (Tidak ada tanda tangan)</div>
-                    </div>
+                    <div class="activity-actions">
+                            <button class="btn-approve">✓ Setujui</button>
+                            <button class="btn-reject">✕ Tolak</button>
+                        </div>
+                </div>
+                </div>
                 </div>
             </div>
         </div>
     </div>
 </body>
+<script>
+    document.querySelectorAll('.btn-approve').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const activityTitle = this.closest('.activity-item').querySelector('.activity-title').textContent.trim();
+            
+            // Tampilkan alert sukses
+            showAlert('success', '✓ Disetujui!', '"' + activityTitle + '" telah berhasil disetujui.');
+            
+            // Ubah tombol jadi status
+            const actions = this.closest('.activity-actions');
+            actions.innerHTML = '<span class="badge badge-accepted">✓ Disetujui</span>';
+        });
+    });
+
+    document.querySelectorAll('.btn-reject').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const activityTitle = this.closest('.activity-item').querySelector('.activity-title').textContent.trim();
+            
+            // Tampilkan alert gagal
+            showAlert('danger', '✕ Ditolak!', '"' + activityTitle + '" telah ditolak.');
+            
+            // Ubah tombol jadi status
+            const actions = this.closest('.activity-actions');
+            actions.innerHTML = '<span class="badge badge-rejected">✕ Ditolak</span>';
+        });
+    });
+
+    function showAlert(type, title, message) {
+        // Hapus alert lama kalau ada
+        const existing = document.querySelector('.custom-alert');
+        if (existing) existing.remove();
+
+        const colors = {
+            success: { bg: '#d1fae5', border: '#6ee7b7', text: '#065f46' },
+            danger:  { bg: '#fee2e2', border: '#fca5a5', text: '#991b1b' }
+        };
+
+        const alert = document.createElement('div');
+        alert.className = 'custom-alert';
+        alert.style.cssText = `
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            background: ${colors[type].bg};
+            border: 1.5px solid ${colors[type].border};
+            color: ${colors[type].text};
+            border-radius: 10px;
+            padding: 14px 20px;
+            min-width: 300px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        `;
+
+        alert.innerHTML = `
+            <div style="font-weight: 600; font-size: 15px; margin-bottom: 4px;">${title}</div>
+            <div>${message}</div>
+        `;
+
+        document.body.appendChild(alert);
+
+        // Hilang otomatis setelah 3 detik
+        setTimeout(function() {
+            alert.style.transition = 'opacity 0.4s';
+            alert.style.opacity = '0';
+            setTimeout(function() { alert.remove(); }, 400);
+        }, 3000);
+}
+</script>
 </html>
