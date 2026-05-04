@@ -25,10 +25,9 @@ Route::get('/permohonan', function () {
     return view('permohonan');
 })->name('permohonan');
 
-Route::get('/landingPage', function () {
-    return view('landingPage');
-})->name('landingPage');
-
+Route::get('/pemasukanBarang', function () {
+    return view('pemasukanBarang');
+})->name('pemasukanBarang');
 
 Route::get('/dashboardPage', function () {
     return view('dashboardPage');
@@ -71,6 +70,7 @@ Route::get('/kartuKendali', function () {
 
 Route::get('/laporanRinciBulanan', [RincianBulananController::class, 'rinciBulanan'])->name('laporan.rinci');
 
-Route::get('/permohonan', function () {
-    return view('permohonan');
-})->name('permohonan');
+
+Route::get('/laporanPermohonan', function () {
+    return view('laporanPermohonan');
+})->name('laporanPermohonan');
