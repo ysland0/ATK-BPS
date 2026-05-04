@@ -7,6 +7,7 @@ use App\Http\Controllers\StockAwalController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\RincianBulananController;
 
 Route::get('/', function () {
     return view('tampilan');
@@ -68,9 +69,7 @@ Route::get('/kartuKendali', function () {
     return view('kartuKendali');
 })->name('kartuKendali');
 
-Route::get('/laporanRinciBulanan', function () {
-    return view('laporanRinciBulanan');
-})->name('laporanRinciBulanan');
+Route::get('/laporanRinciBulanan', [RincianBulananController::class, 'rinciBulanan'])->name('laporan.rinci');
 
 Route::get('/permohonan', function () {
     return view('permohonan');

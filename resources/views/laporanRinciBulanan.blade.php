@@ -120,31 +120,24 @@
             </div>
             <p class="filter-subtitle">Rekap transaksi bulanan: Pengambilan, Pemasukan, dan Transfer</p>
 
-            <div class="filter-form">
-                <div class="form-group">
+            <form action="{{ route('laporan.rinci') }}" method="GET" class="filter-form">
+                <div class="filter-form">
+                    <div class="form-group">
                     <label>Bulan</label>
-                    <select id="bulan">
-                        <option value="01">Januari</option>
-                        <option value="02" selected>Februari</option>
-                        <option value="03">Maret</option>
-                        <option value="04">April</option>
-                        <option value="05">Mei</option>
-                        <option value="06">Juni</option>
-                        <option value="07">Juli</option>
-                        <option value="08">Agustus</option>
-                        <option value="09">September</option>
-                        <option value="10">Oktober</option>
-                        <option value="11">November</option>
-                        <option value="12">Desember</option>
+                    <select name="bulan" id="bulan">
+                        @foreach(range(1, 12) as $m)
+                            <option value="{{ sprintf('%02d', $m) }}" {{ $bulan == $m ? 'selected' : '' }}>
+                                {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>Tahun</label>
-                    <select id="tahun">
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                        <option value="2026" selected>2026</option>
+                    <select name="tahun" id="tahun">
+                        <option value="2025" {{ $tahun == '2025' ? 'selected' : '' }}>2025</option>
+                        <option value="2026" {{ $tahun == '2026' ? 'selected' : '' }}>2026</option>
                     </select>
                 </div>
 
@@ -208,32 +201,51 @@
         </div>
 
         <!-- Table Section -->
-        <div class="table-section">
-            <div class="table-container">
-                <table id="laporanTable">
-                    <thead>
-                        <tr>
-                            <th>Jenis</th>
-                            <th>Kode</th>
-                            <th>Nama Barang</th>
-                            <th>Jumlah</th>
-                            <th>Satuan</th>
-                            <th>Tgl Buku</th>
-                            <th>Harga Sat.</th>
-                            <th>Total Harga</th>
-                            <th>Tgl Dokumen</th>
-                            <th>No. Bukti</th>
-                            <th>Tag ID</th>
-                            <th>Pemasukan</th>
-                            <th>Pengambilan</th>
-                            <th>Saldo Akhir</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <!-- Data will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
+        <div class="table-container">
+            <table id="laporanTable">
+                <thead>
+                    <tr>
+                        <th>JENIS</th>
+                        <th>KODE</th>
+                        <th>NAMA BARANG</th>
+                        <th>JUMLAH</th>
+                        <th>SATUAN</th>
+                        <th>TGL BUKU</th>
+                        <th>HARGA SAT.</th>
+                        <th>TOTAL HARGA</th>
+                        <th>NO. BUKTI</th>
+                        <th>NAMA/SUPPLIER</th>
+                        <th>MASUK</th>
+                        <th>KELUAR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($allData as $data)
+                    <tr>
+                        <td>
+                            @if($data['jenis'] == 'PAKAI')
+                                <span class="badge badge-pakai" style="background:#fee2e2; color:#b91c1c;">PAKAI</span>
+                            @elseif($data['jenis'] == 'PEMBELIAN')
+                                <span class="badge" style="background:#dcfce7; color:#15803d;">BELI</span>
+                            @else
+                                <span class="badge" style="background:#fef9c3; color:#a16207;">TRANSFER</span>
+                            @endif
+                        </td>
+                        <td>{{ $data['kode'] }}</td>
+                        <td>{{ $data['nama'] }}</td>
+                        <td>{{ $data['jumlah'] }}</td>
+                        <td>{{ $data['satuan'] }}</td>
+                        <td>{{ \Carbon\Carbon::parse($data['tanggal'])->format('d/m/Y') }}</td>
+                        <td>Rp {{ number_format($data['harga'], 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($data['harga'] * $data['jumlah'], 0, ',', '.') }}</td>
+                        <td>{{ $data['bukti'] }}</td>
+                        <td>{{ $data['tag_id'] }}</td>
+                        <td style="color: green; font-weight: bold;">{{ $data['masuk'] > 0 ? '+'.$data['masuk'] : '-' }}</td>
+                        <td style="color: red; font-weight: bold;">{{ $data['keluar'] > 0 ? '-'.$data['keluar'] : '-' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 
