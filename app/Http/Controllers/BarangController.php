@@ -34,7 +34,21 @@ class BarangController extends Controller
     public function update(Request $request, $id)
     {
         $barang = Barang::findOrFail($id);
-        $barang->update($request->all());
+
+        $request->validate([
+            'nama_barang' => 'required',
+            'kode_barang' => 'required|unique:barangs,kode_barang,' . $id,
+            'satuan'      => 'required',
+            'kategori'    => 'required',
+        ]);
+
+        $barang->update([
+            'nama_barang' => $request->nama_barang,
+            'kode_barang' => $request->kode_barang,
+            'satuan'      => $request->satuan,
+            'kategori'    => $request->kategori,
+        ]);
+
         return redirect()->back()->with('success', 'Data barang berhasil diubah!');
     }
 

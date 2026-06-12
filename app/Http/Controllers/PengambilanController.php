@@ -18,21 +18,25 @@ class PengambilanController extends Controller
         $tahun = $request->get('tahun', date('Y'));
 
         $queryHarian = Pengambilan::leftJoin('barangs', function($join) {
-            $join->on(DB::raw('trim(pengambilans.nama_barang)'), '=', DB::raw('trim(barangs.nama_barang)'));
+        $join->on(DB::raw('trim(pengambilans.nama_barang)'), '=', DB::raw('trim(barangs.nama_barang)'));
         })
-        ->select('pengambilans.*', 'barangs.kode_barang', 'barangs.satuan as satuan_barang');
+        ->select('pengambilans.*', 'barangs.kode_barang', 'barangs.satuan as satuan_barang')
+        ->where('pengambilans.status', 'approved');
 
         $queryRekap = Pengambilan::leftJoin('barangs', function($join) {
-            $join->on(DB::raw('trim(pengambilans.nama_barang)'), '=', DB::raw('trim(barangs.nama_barang)'));
+        $join->on(DB::raw('trim(pengambilans.nama_barang)'), '=', DB::raw('trim(barangs.nama_barang)'));
         })
+
         ->select(
             'pengambilans.tanggal',
+            'pengambilans.no_bukti',
             'barangs.kode_barang',
             'pengambilans.nama_barang',
             'barangs.satuan',
             DB::raw('SUM(pengambilans.jumlah) as total_diambil')
         )
-        ->groupBy('pengambilans.tanggal', 'barangs.kode_barang', 'pengambilans.nama_barang', 'barangs.satuan');
+        ->where('pengambilans.status', 'approved') 
+        ->groupBy('pengambilans.tanggal', 'pengambilans.no_bukti', 'barangs.kode_barang', 'pengambilans.nama_barang', 'barangs.satuan');
 
         if ($jenis == 'harian' && !empty($tanggal)) {
             $queryHarian->whereDate('pengambilans.tanggal', $tanggal);
@@ -50,7 +54,9 @@ class PengambilanController extends Controller
 
         $rekapBulanan = $queryRekap->orderBy('pengambilans.tanggal', 'desc')->get();
 
-        return view('laporanPengambilan', compact('pengambilans', 'rekapBulanan'));
+        $barangs = Barang::orderBy('nama_barang', 'asc')->get();
+        $pegawais = Pegawai::orderBy('nama', 'asc')->get();
+        return view('laporanPengambilan', compact('pengambilans', 'rekapBulanan', 'barangs', 'pegawais'));
     }
 
     public function create()
@@ -64,35 +70,133 @@ class PengambilanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_pegawai' => 'required',
-            'tanggal' => 'required|date',
-            'nama_barang' => 'required',
-            'jumlah' => 'required|numeric|min:1',
-            'tanda_tangan' => 'required',
+            'nama_pegawai'  => 'required',
+            'tanggal'       => 'required',
+            'nama_barang'   => 'required|array',
+            'nama_barang.*' => 'required',
+            'jumlah'        => 'required|array',
+            'jumlah.*'      => 'required|numeric|min:1',
+            'tanda_tangan'  => 'required',
         ]);
 
-        $barang = Barang::where('nama_barang', $request->nama_barang)->first();
-        if (!$barang) {
-            return back()->withErrors(['error' => 'Barang tidak ditemukan di database!']);
+        $namaBarangs = $request->nama_barang;
+        $jumlahs     = $request->jumlah;
+
+        // Cek stok semua item dulu sebelum insert
+        foreach ($namaBarangs as $i => $namaBarang) {
+            $barang = Barang::where('nama_barang', $namaBarang)->first();
+            $jumlah = $jumlahs[$i];
+
+            if (!$barang || $barang->stok < $jumlah) {
+                return back()
+                    ->with('error', "Stok barang \"$namaBarang\" tidak mencukupi!")
+                    ->withInput();
+            }
         }
 
-        if ($barang->stok < $request->jumlah) {
-            return back()->withErrors(['error' => 'Maaf, stok barang tidak mencukupi!']);
-        }
-
-        DB::transaction(function () use ($request, $barang) {
+        // Simpan semua item
+        foreach ($namaBarangs as $i => $namaBarang) {
             Pengambilan::create([
                 'nama_pegawai' => $request->nama_pegawai,
-                'tanggal' => $request->tanggal,
-                'nama_barang' => $request->nama_barang,
-                'jumlah' => $request->jumlah,
+                'tanggal'      => $request->tanggal,
+                'nama_barang'  => $namaBarang,
+                'jumlah'       => $jumlahs[$i],
                 'tanda_tangan' => $request->tanda_tangan,
+                'status'       => 'pending',
             ]);
+        }
 
-            $barang->decrement('stok', $request->jumlah);
+        return redirect()->back()->with('success', '✅ Permohonan dikirim! Menunggu persetujuan admin.');
+    }
+
+    public function approve($id)
+    {
+        $pengambilan = Pengambilan::findOrFail($id);
+        $barang = Barang::where('nama_barang', $pengambilan->nama_barang)->first();
+
+        if (!$barang || $barang->stok < $pengambilan->jumlah) {
+            return back()->with('error', 'Gagal! Stok barang tidak mencukupi.');
+        }
+
+        $tglData = $pengambilan->tanggal; 
+        $bulan = date('m', strtotime($tglData));
+        $tahun = date('Y', strtotime($tglData));
+
+        $daftarHariUnik = Pengambilan::whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->distinct()
+            ->orderBy('tanggal', 'asc')
+            ->pluck('tanggal')
+            ->toArray();
+
+        $urutanHari = array_search($tglData, $daftarHariUnik) + 1;
+        $noBuktiFix = "3374-" . $urutanHari;
+        
+        DB::transaction(function () use ($pengambilan, $barang, $noBuktiFix) {
+            $barang->decrement('stok', $pengambilan->jumlah);
+            $pengambilan->update([
+                'status' => 'approved',
+                'no_bukti' => $noBuktiFix
+            ]);
         });
 
-            return redirect()->back()->with('success', '✅ Pengambilan berhasil! Stok ' . $request->nama_barang . ' otomatis berkurang.');
+        return back()->with('success', 'Disetujui! No Bukti: ' . $noBuktiFix);
+    }
+
+    public function reject($id)
+    {
+        $pengambilan = Pengambilan::findOrFail($id);
+        $pengambilan->update(['status' => 'rejected']);
+
+        return back()->with('success', 'Permohonan ' . $pengambilan->nama_pegawai . ' telah ditolak.');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nama_barang' => 'required',
+            'jumlah' => 'required|numeric|min:1',
+        ]);
+
+        $pengambilan = Pengambilan::findOrFail($id);
+        $barangLama = Barang::where('nama_barang', $pengambilan->nama_barang)->first();
+        $barangBaru = Barang::where('nama_barang', $request->nama_barang)->first();
+
+        if (!$barangBaru) {
+            return back()->with('error', 'Barang tidak ditemukan!');
+        }
+
+        try {
+            DB::transaction(function () use ($pengambilan, $barangLama, $barangBaru, $request) {
+                if ($barangLama) {
+                    $barangLama->increment('stok', $pengambilan->jumlah);
+                }
+                if ($barangBaru->fresh()->stok < $request->jumlah) {
+                    throw new \Exception('Stok tidak mencukupi!');
+                }
+                $barangBaru->decrement('stok', $request->jumlah);
+
+                $updateData = [
+                    'nama_barang' => $request->nama_barang,
+                    'jumlah'      => $request->jumlah,
+                ];
+
+                // Kalau nama pegawai diisi, ganti nama + TTD
+                if ($request->filled('nama_pegawai')) {
+                    $updateData['nama_pegawai'] = $request->nama_pegawai;
+                    $updateData['tanda_tangan'] = $request->tanda_tangan;
+                }
+
+                // Pastikan updated_at tidak mengubah created_at (jam di tabel tetap)
+                $pengambilan->timestamps = false;
+                $pengambilan->update($updateData);
+                $pengambilan->timestamps = true;
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', 'Data berhasil diperbarui!');
     }
 
     public function destroy($id)

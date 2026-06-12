@@ -6,6 +6,25 @@
     <title>Stock Awal Tahun - Pencatatan ATK</title>
     <link rel="stylesheet" href="{{ asset('assets/css/stockAwal.css') }}">
     <style>
+        .btn-red {
+            background: #ef4444;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-red:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
         .pagination-wrapper {
             width: 100%;
             overflow-x: auto; 
@@ -170,6 +189,17 @@
 
     <!-- Main Content -->
     <div class="main-content">
+        @if(session('success'))
+            <div style="background:#d1fae5; color:#065f46; padding:14px 20px; border-radius:10px; margin-bottom:20px; border:1px solid #6ee7b7; font-weight:600;">
+                ✅ {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div style="background:#fee2e2; color:#991b1b; padding:14px 20px; border-radius:10px; margin-bottom:20px; border:1px solid #fca5a5; font-weight:600;">
+                ❌ {{ session('error') }}
+            </div>
+        @endif
         <!-- Page Header with Buttons -->
         <div class="page-header-wrapper">
             <div class="page-header">
@@ -181,6 +211,10 @@
                         <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
                     </svg>
                     Template
+                </button>
+                <button class="btn btn-red" onclick="showImportModal()">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    Reset & Import CSV
                 </button>
                 <button class="btn btn-green" onclick="showAddModal()">
                     <svg fill="currentColor" viewBox="0 0 20 20">
@@ -351,6 +385,30 @@
         </div>
     </div>
 
+    <!-- Modal Import CSV -->
+    <div id="importModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reset & Import Stok Awal</h2>
+                <button class="close-btn" onclick="closeImportModal()">&times;</button>
+            </div>
+            <form action="{{ route('stock.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div style="background: #fff1f2; color: #991b1b; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
+                    <strong>⚠️ PERINGATAN:</strong> Mengimport file ini akan <strong>MENGHAPUS SEMUA</strong> riwayat pengambilan dan pemasukan barang yang sudah ada.
+                </div>
+                <div class="form-group">
+                    <label>Pilih File CSV <span>*</span></label>
+                    <input type="file" name="file_csv" accept=".csv" required style="padding: 10px;">
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="modal-btn cancel-btn" onclick="closeImportModal()">Batal</button>
+                    <button type="submit" class="modal-btn submit-btn" style="background: #ef4444;">Proses Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Logout Modal -->
     <div id="logoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center;">
         <div style="background: white; border-radius: 20px; padding: 35px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
@@ -414,13 +472,6 @@
                         <td>${item.keterangan}</td>
                        <td>
                             <div class="action-buttons">
-                                <!-- Tombol Edit -->
-                                <button class="btn-action edit-btn" onclick="editStock(${item.id})" title="Edit">
-                                    <svg fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
-                                </button>
-
                                 <!-- Tombol Hapus -->
                                 <form action="/hapus-stockawal/${item.id}" method="POST" style="margin:0;">
                                     @csrf @method('DELETE')
@@ -549,7 +600,7 @@
 
         function showAddModal() { document.getElementById('addModal').style.display = 'flex'; }
         function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
-        function confirmLogout() { window.location.href = '/'; }
+        function confirmLogout() {window.location.href = "{{ route('logout') }}";}
 
         
         document.addEventListener('DOMContentLoaded', () => {
@@ -606,6 +657,33 @@
                 kodeInput.value = "";
                 satuanInput.value = "";
             }
+        }
+
+        function showImportModal() {
+            document.getElementById('importModal').style.display = 'flex';
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').style.display = 'none';
+        }
+
+        function handleImport() {
+            if (confirm("Apakah Anda yakin? Seluruh riwayat transaksi pengambilan barang akan DIHAPUS PERMANEN!")) {
+                document.getElementById('formImport').submit();
+            }
+        }
+
+        function downloadTemplate() {
+            const csvContent = "kode_barang,nama_barang,satuan,stok_awal\n1010302004000001,Amplop Cetakan,DOS,50\n1010302001000003,Amplop casing A 10,pak,100";
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "template_stok_awal.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>

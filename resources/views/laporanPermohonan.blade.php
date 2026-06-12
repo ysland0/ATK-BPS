@@ -122,78 +122,40 @@
     </div>
     <!-- Request Cards -->
         <div class="request-cards" id="requestCards">
-            <!-- Card 1 -->
-            <div class="request-card" data-name="kertas hvs warna merah" data-employee="siti aminah">
-                <div class="request-info">
-                    <div class="request-details">
-                        <h3>Kertas HVS warna Merah</h3>
-                        <p>Siti Aminah</p>
-                    </div>
-                </div>
-                <div class="request-actions">
-                    <button class="btn-action btn-selesai" onclick="selesaiRequest(this)">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                        </svg>
-                        Diterima
-                    </button>
-                    <button class="btn-action btn-tolak" onclick="tolakRequest(this)">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                        </svg>
-                        Ditolak
-                    </button>
-                </div>
-                </div>
+        @php
+            $pendingRequests = $permohonans->where('status', 'pending');
+        @endphp
 
-            <!-- Card 2 -->
-            <div class="request-card" data-name="kertas hvs warna merah" data-employee="siti aminah">
+        @forelse($pendingRequests as $p)
+            <div class="request-card">
                 <div class="request-info">
                     <div class="request-details">
-                        <h3>Kertas HVS warna Merah</h3>
-                        <p>Siti Aminah</p>
+                        <h3>{{ $p->request_barang }}</h3>
+                        <p>{{ $p->nama_pegawai }}</p>
+                        <small style="color: #9ca3af;">Diminta pada: {{ $p->created_at->format('d M Y, H:i') }}</small>
                     </div>
                 </div>
                 <div class="request-actions">
-                    <button class="btn-action btn-selesai" onclick="selesaiRequest(this)">
+                    <!-- Gunakan Link ke Controller updateStatus -->
+                    <a href="{{ route('permohonan.status', [$p->id, 'diterima']) }}" class="btn-action btn-selesai" style="text-decoration: none; display: flex; align-items: center; gap: 5px;">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                         </svg>
                         Diterima
-                    </button>
-                    <button class="btn-action btn-tolak" onclick="tolakRequest(this)">
+                    </a>
+                    <a href="{{ route('permohonan.status', [$p->id, 'ditolak']) }}" class="btn-action btn-tolak" style="text-decoration: none; display: flex; align-items: center; gap: 5px;">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
                         </svg>
                         Ditolak
-                    </button>
+                    </a>
                 </div>
             </div>
-
-            <!-- Card 3 -->
-            <div class="request-card" data-name="kertas hvs warna merah" data-employee="siti aminah">
-                <div class="request-info">
-                    <div class="request-details">
-                        <h3>Kertas HVS warna Merah</h3>
-                        <p>Siti Aminah</p>
-                    </div>
-                </div>
-                <div class="request-actions">
-                    <button class="btn-action btn-selesai" onclick="selesaiRequest(this)">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                        </svg>
-                        Diterima
-                    </button>
-                    <button class="btn-action btn-tolak" onclick="tolakRequest(this)">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                        </svg>
-                        Ditolak
-                    </button>
-                </div>
-            </div>
-        </div>
+        @empty
+            <p style="text-align: center; color: #6b7280; width: 100%; padding: 20px;">Belum ada permohonan baru.</p>
+        @endforelse
+    </div>
+    
         <button class="btn-print" onclick="printPDF()">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"/>
@@ -281,107 +243,89 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
+                    @foreach($permohonans as $index => $p)
                     <tr>
                         <td>
-                            <div>
-                                <div style="font-weight: 600;">kertas HVS warna Merah</div>
-                            </div>
+                            <div style="font-weight: 600;">{{ $p->request_barang }}</div>
                         </td>
                         <td>
-                            <div style="font-weight: 600;">Siti Aminah</div>
+                            <div style="font-weight: 600;">{{ $p->nama_pegawai }}</div>
+                        </td>
                         <td>
-                            <span class="status-badge status-selesai">Diterima</span>
+                            {{-- Badge warna dinamis sesuai status --}}
+                            @if($p->status == 'diterima')
+                                <span class="status-badge status-selesai">Diterima</span>
+                            @elseif($p->status == 'ditolak')
+                                <span class="status-badge" style="background: #fee2e2; color: #dc2626;">Ditolak</span>
+                            @else
+                                <span class="status-badge" style="background: #fef3c7; color: #d97706;">Pending</span>
+                            @endif
                         </td>
                         <td>
                             <div class="action-icons">
-                                <button class="icon-btn view" onclick="viewRequest(this)" title="Lihat Detail">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <button class="icon-btn edit" onclick="editRequest(this)" title="Edit">
+                                <button onclick="editItem(this)" data-permohonan='@json($p)' title="Edit" style="background:#fef3c7; color:#b45309; border:none; border-radius:8px; width:32px; height:32px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; margin-right:4px;">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
                                     </svg>
                                 </button>
-                                <button class="icon-btn delete" onclick="deleteRequest(this)" title="Hapus">
+                                <button class="icon-btn delete" onclick="confirmDelete('{{ $p->id }}')" title="Hapus">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                     </svg>
                                 </button>
+                                {{-- Form hidden untuk delete --}}
+                                <form id="delete-form-{{ $p->id }}" action="{{ route('permohonan.destroy', $p->id) }}" method="POST" style="display: none;">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
                             </div>
                         </td>
                     </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <div style="font-weight: 600;">kertas HVS warna Merah</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600;">Siti Aminah</div>
-                        <td>
-                            <span class="status-badge status-selesai">Diterima</span>
-                        </td>
-                        <td>
-                            <div class="action-icons">
-                                <button class="icon-btn view" onclick="viewRequest(this)" title="Lihat Detail">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <button class="icon-btn edit" onclick="editRequest(this)" title="Edit">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
-                                </button>
-                                <button class="icon-btn delete" onclick="deleteRequest(this)" title="Hapus">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <div style="font-weight: 600;">kertas HVS warna Merah</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600;">Siti Aminah</div>
-                        <td>
-                            <span class="status-badge status-selesai">Diterima</span>
-                        </td>
-                        <td>
-                            <div class="action-icons">
-                                <button class="icon-btn view" onclick="viewRequest(this)" title="Lihat Detail">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <button class="icon-btn edit" onclick="editRequest(this)" title="Edit">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
-                                </button>
-                                <button class="icon-btn delete" onclick="deleteRequest(this)" title="Hapus">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
     </div>
-            <!-- Logout Modal -->
+
+        <!-- Modal Edit Permohonan -->
+        <div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); z-index:9999; justify-content:center; align-items:center;">
+            <div style="background:white; border-radius:16px; padding:30px; width:90%; max-width:450px; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 style="font-size:18px; font-weight:700; color:#1f2937;">Edit Permohonan</h3>
+                    <button onclick="closeEditModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#6b7280;">&times;</button>
+                </div>
+                <form id="editForm" method="POST">
+                    @csrf
+                    <input type="hidden" name="_method" value="PUT">
+
+                    <div style="margin-bottom:15px;">
+                        <label style="font-weight:600; font-size:14px; display:block; margin-bottom:6px;">Nama Pegawai</label>
+                        <input type="text" id="editNamaPegawai" name="nama_pegawai" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; box-sizing:border-box;">
+                    </div>
+
+                    <div style="margin-bottom:15px;">
+                        <label style="font-weight:600; font-size:14px; display:block; margin-bottom:6px;">Nama Barang</label>
+                        <input type="text" id="editNamaBarang" name="request_barang" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; box-sizing:border-box;">
+                    </div>
+
+                    <div style="margin-bottom:20px;">
+                        <label style="font-weight:600; font-size:14px; display:block; margin-bottom:6px;">Status</label>
+                        <select id="editStatus" name="status" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px;">
+                            <option value="pending">Pending</option>
+                            <option value="diterima">Diterima</option>
+                            <option value="ditolak">Ditolak</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" onclick="closeEditModal()" style="flex:1; padding:12px; background:#f3f4f6; color:#4b5563; border:2px solid #e5e7eb; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer;">Batal</button>
+                        <button type="submit" style="flex:1; padding:12px; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:white; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer;">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Logout Modal -->
         <div id="logoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center;">
             <div style="background: white; border-radius: 20px; padding: 35px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
                 <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px;">
@@ -406,11 +350,12 @@
             const acceptedItems = [];
             
             // Collect accepted items
-            tableRows.forEach(row => {
+             tableRows.forEach(row => {
                 const statusBadge = row.querySelector('.status-badge');
-                if (statusBadge && statusBadge.textContent.trim() === 'Diterima') {
-                    const itemName = row.querySelector('td div div:first-child').textContent.trim();
-                    const employeeName = row.querySelector('td div div:last-child').textContent.trim();
+                // Cek teks badge, pastikan ambil yang 'Diterima'
+                if (statusBadge && statusBadge.textContent.trim().toLowerCase() === 'diterima') {
+                    const itemName = row.querySelector('td:first-child div').textContent.trim();
+                    const employeeName = row.querySelector('td:nth-child(2) div').textContent.trim();
                     acceptedItems.push({ itemName, employeeName });
                 }
             });
@@ -436,13 +381,10 @@
                 printContainer.appendChild(page);
             }
             
-            // Print
-            setTimeout(() => {
-                window.print();
-            }, 100);
+            window.print();
+            printContainer.style.display = 'none';
         }
 
-        // Create a print page
         function createPrintPage(items, pageNumber, startIndex) {
             const today = new Date();
             const day = today.getDate();
@@ -452,33 +394,73 @@
             const page = document.createElement('div');
             page.className = 'print-page';
             
+            const logoUrl = "{{ asset('assets/images/logoBPS.png') }}";
+
             page.innerHTML = `
-                <div class="print-header">
-                    <div class="print-logo">
-                        <img src="{{ asset('assets/images/logoBPS.png') }}" alt="Logo BPS" onerror="this.style.display='none'">
-                        <div class="print-logo-text">
-                            <h3>BADAN PUSAT STATISTIK</h3>
-                            <h3>KOTA SEMARANG</h3>
+                <style>
+                    .print-page { 
+                        font-family: Arial, sans-serif; 
+                        padding: 10mm 15mm; 
+                        color: black; 
+                        background: white;
+                        min-height: 230mm; 
+                        display: flex;
+                        flex-direction: column;
+                        box-sizing: border-box;
+                    }
+
+                    .header-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+                    .logo-section { display: flex; align-items: center; gap: 12px; }
+                    .logo-img { width: 45px; height: auto; }
+                    .header-text h1 { font-size: 10pt; margin: 0; line-height: 1.2; font-weight: bold; }
+                    .doc-info { font-size: 9pt; text-align: left; line-height: 1.4; }
+                    
+                    .title-section { text-align: center; margin: 15px 0; }
+                    .title-section h2 { font-size: 11pt; text-decoration: underline; text-underline-offset: 3px; margin: 0; font-weight: bold; }
+                    .title-section p { font-size: 9pt; margin: 3px 0; font-weight: bold; }
+
+                    table.print-table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+                    table.print-table th, table.print-table td { border: 1px solid black; padding: 16px 10px; font-size: 10pt; }
+                    table.print-table th { background: #f2f2f2; font-weight: bold; text-align: center; }
+                    
+                    .footer-sig { 
+                        margin-top: auto; 
+                        display: flex; 
+                        justify-content: space-between; 
+                        align-items: flex-start; 
+                        padding-bottom: 5mm;
+                    }
+                    .sig-box { text-align: center; width: 250px; }
+                    .sig-box p { margin: 0; line-height: 1.3; font-size: 10pt; }
+                    .sig-space { height: 70px; }
+                    .name-line { font-weight: bold; text-decoration: underline; text-transform: uppercase; }
+                </style>
+
+                <div class="header-container">
+                    <div class="logo-section">
+                        <img src="${logoUrl}" class="logo-img">
+                        <div class="header-text">
+                            <h1>BADAN PUSAT STATISTIK</h1>
+                            <h1>KOTA SEMARANG</h1>
                         </div>
                     </div>
-
-                    <div class="print-title">
-                        <h2>SURAT PERMOHONAN PERSEDIAAN BARANG</h2>
-                        <h2>ATK/CETAKAN/DLL</h2>
+                    <div class="doc-info">
+                        No : ${generateDocNumber()}<br>
+                        Tahun : ${year}
                     </div>
+                </div>
 
-                    <div class="print-info">
-                        <div>No : <strong>${generateDocNumber()}</strong></div>
-                        <div>Tahun: <strong>${day}/${today.getMonth() + 1}/${year}</strong></div>
-                    </div>
+                <div class="title-section">
+                    <h2>SURAT PERMOHONAN PERSEDIAAN BARANG</h2>
+                    <p>ATK/CETAKAN/DLL</p>
                 </div>
 
                 <table class="print-table">
                     <thead>
                         <tr>
-                            <th>No.</th>
-                            <th>Nama Barang</th>
-                            <th>Nama Peminta Barang</th>
+                            <th style="width: 8%;">No.</th>
+                            <th style="width: 50%;">Nama Barang</th>
+                            <th style="width: 42%;">Nama Peminta Barang</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -512,25 +494,21 @@
         // Generate signatures (only on first page)
         function generateSignatures(day, month, year) {
             return `
-                <div class="print-signatures">
-                    <div class="signature-block">
-                        <p class="title">Mengetahui</p>
-                        <p class="jabatan">Kepala Subbagian Umum</p>
-
-                        <div class="ttd-space"></div>
-
-                        <p class="name">Ir. Rina Wulanjar</p>
-                        <p class="nip">NIP. 19690120 199401 2 001</p>
+                <div class="footer-sig">
+                    <div class="sig-box">
+                        <p>Mengetahui,</p>
+                        <p>Kepala Subbagian Umum</p>
+                        <div class="sig-space"></div>
+                        <p class="name-line">DEWI FENTY EKASARI, SST.,M.Si</p>
+                        <p>NIP. 198102082003122003</p>
                     </div>
 
-                    <div class="signature-block">
-                        <p class="date invisible">Semarang, ${day} ${month} ${year}</p>
-                        <p class="jabatan">Petugas Persediaan</p>
-
-                        <div class="ttd-space"></div>
-
-                        <p class="name">Hartanto Agoestijono</p>
-                        <p class="nip">NIP. 19700802 199102 1 002</p>
+                    <div class="sig-box">
+                        <p>Semarang, ${day} ${month} ${year}</p>
+                        <p>Petugas Persediaan</p>
+                        <div class="sig-space"></div>
+                        <p class="name-line">HARTANTO ADISATRIANTO</p>
+                        <p>NIP. 19780922 199126 1-02</p>
                     </div>
                 </div>
             `;
@@ -643,19 +621,27 @@
         function editRequest(button) {
             alert('Fitur edit akan segera tersedia!');
         }
+        
+        function editItem(btn) {
+            const data = JSON.parse(btn.getAttribute('data-permohonan'));
+            document.getElementById('editNamaPegawai').value = data.nama_pegawai;
+            document.getElementById('editNamaBarang').value = data.request_barang;
+            document.getElementById('editStatus').value = data.status;
+            document.getElementById('editForm').action = '/permohonan/' + data.id;
+            document.getElementById('editModal').style.display = 'flex';
+        }
 
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+        
         // Delete request
-        function deleteRequest(button) {
+       function confirmDelete(id) {
             if (confirm('Hapus permohonan ini dari riwayat?')) {
-                const row = button.closest('tr');
-                row.style.opacity = '0';
-                
-                setTimeout(() => {
-                    row.remove();
-                    alert('🗑️ Permohonan berhasil dihapus!');
-                }, 300);
+                document.getElementById('delete-form-' + id).submit();
             }
         }
+
         
         // Logout Modal
             function showLogoutModal() {
@@ -667,7 +653,7 @@
             }
 
             function confirmLogout() {
-                window.location.href = '/';
+                 window.location.href = "{{ route('logout') }}";
             }
 
             window.onclick = function(event) {

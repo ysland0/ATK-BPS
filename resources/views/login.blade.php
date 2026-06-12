@@ -27,14 +27,21 @@
         <div class="login-card">
             <h1 class="login-title">ADMIN LOGIN</h1>
 
-            <div id="errorMessage" class="error-message">
-                Username atau password salah!
-            </div>
+            <!-- Menampilkan Pesan Error dari Laravel -->
+            @if($errors->has('email'))
+                <div class="error-message show">
+                    {{ $errors->first('email') }}
+                </div>
+            @endif
 
-            <form id="loginForm">
+            <!-- Tambahkan action dan method -->
+            <form method="POST" action="/login">
+                @csrf <!-- WAJIB ADA -->
+                
                 <div class="form-group">
-                    <label for="username">username</label>
-                    <input type="text" id="username" name="username" required autocomplete="off">
+                    <label for="email">Email</label>
+                    <!-- name harus 'email' agar dibaca Controller -->
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required autocomplete="off">
                 </div>
 
                 <div class="form-group">
@@ -50,36 +57,16 @@
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
+        // Jika ada error dari Laravel, jalankan efek getar saat halaman terbuka
+        @if($errors->any())
+            const loginCard = document.querySelector('.login-card');
+            loginCard.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                loginCard.style.animation = '';
+            }, 500);
+        @endif
 
-            // Hapus error message dulu
-            errorMessage.classList.remove('show');
-
-            // Validasi username dan password
-            if (username === 'admin123' && password === 'password123') {
-                // Login berhasil
-                alert('Login berhasil!');
-                // Redirect ke lqanding page 
-                window.location.href = '/dashboardPage';
-            } else {
-                // Login gagal
-                errorMessage.classList.add('show');
-                
-                // Goyang form untuk efek error
-                const loginCard = document.querySelector('.login-card');
-                loginCard.style.animation = 'shake 0.5s';
-                setTimeout(() => {
-                    loginCard.style.animation = '';
-                }, 500);
-            }
-        });
-
-        // Animasi shake untuk error
+        // Animasi shake CSS tetap dipertahankan
         const style = document.createElement('style');
         style.textContent = `
             @keyframes shake {

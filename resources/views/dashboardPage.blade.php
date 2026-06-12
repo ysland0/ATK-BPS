@@ -127,7 +127,7 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Barang Tersedia</h3>
-                    <div class="stat-number">18</div>
+                    <div class="stat-number">{{ $totalBarang }}</div>
                 </div>
                 <div class="stat-icon blue">
                     <svg fill="currentColor" viewBox="0 0 20 20">
@@ -140,7 +140,7 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Diambil Bulan Ini</h3>
-                    <div class="stat-number">45</div>
+                    <div class="stat-number">{{ $diambilBulanIni }}</div>
                 </div>
                 <div class="stat-icon yellow">
                     <svg fill="currentColor" viewBox="0 0 20 20">
@@ -153,7 +153,7 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Total Pegawai</h3>
-                    <div class="stat-number">23</div>
+                    <div class="stat-number">{{ $totalPegawai }}</div>
                 </div>
                 <div class="stat-icon purple">
                     <svg fill="currentColor" viewBox="0 0 20 20">
@@ -166,7 +166,7 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Disetujui Hari Ini</h3>
-                    <div class="stat-number">8</div>
+                    <div class="stat-number">{{ $disetujuiHariIni }}</div>
                 </div>
                 <div class="stat-icon green">
                     <svg fill="currentColor" viewBox="0 0 20 20">
@@ -177,172 +177,72 @@
         </div>
 
         <!-- Activity Section -->
-        <div class="activity-section">
-            <h2 class="activity-header">Aktivitas Pengambilan Barang Terbaru</h2>
-            <div class="activity-list">
-                <!-- Activity Item 1 - Approved -->
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">Ahmad Fauzi - Pulpen Biru</div>
-                        <div class="activity-desc">Mengambil 5 unit Pulpen Biru - 03 Feb 2026, 14:30</div>
-                    </div>
-                    <div class="activity-actions">
-                            <button class="btn-approve">✓ Setujui</button>
-                            <button class="btn-reject">✕ Tolak</button>
-                    </div>
+        <div class="activity-list">
+            @foreach($pendingRequests as $req)
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 01-2 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                 </div>
-
-                <!-- Activity Item 2 - In Negotiation (Pending) -->
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">Ahmad Fauzi - Pulpen Biru</div>
-                        <div class="activity-desc">Mengambil 5 unit Pulpen Biru - 03 Feb 2026, 14:30</div>
-                    </div>
-                    <div class="activity-actions">
-                            <button class="btn-approve">✓ Setujui</button>
-                            <button class="btn-reject">✕ Tolak</button>
-                    </div>
-                    </div>
+                <div class="activity-content">
+                    <div class="activity-title">{{ $req->nama_pegawai }} - {{ $req->nama_barang }}</div>
+                    <div class="activity-desc">Mengambil {{ $req->jumlah }} unit - {{ $req->created_at->format('d M Y, H:i') }}</div>
                 </div>
-
-                <!-- Activity Item 3 - Rejected (No Signature) -->
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">Ahmad Fauzi - Pulpen Biru</div>
-                        <div class="activity-desc">Mengambil 5 unit Pulpen Biru - 03 Feb 2026, 14:30</div>
-                    </div>
-                    <div class="activity-actions">
-                            <button class="btn-approve">✓ Setujui</button>
-                            <button class="btn-reject">✕ Tolak</button>
-                    </div>
-                    </div>
-                    <!-- Activity Item 4 - Approved -->
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">Ahmad Fauzi - Pulpen Biru</div>
-                        <div class="activity-desc">Mengambil 5 unit Pulpen Biru - 03 Feb 2026, 14:30</div>
-                    </div>
-                    <div class="activity-actions">
-                            <button class="btn-approve">✓ Setujui</button>
-                            <button class="btn-reject">✕ Tolak</button>
-                    </div>
-                    </div>
-
-                    <!-- Activity Item 5 - Rejected -->
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            <svg fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                        <div class="activity-content">
-                        <div class="activity-title">Ahmad Fauzi - Pulpen Biru</div>
-                        <div class="activity-desc">Mengambil 5 unit Pulpen Biru - 03 Feb 2026, 14:30</div>
-                    </div>
-                    <div class="activity-actions">
-                            <button class="btn-approve">✓ Setujui</button>
-                            <button class="btn-reject">✕ Tolak</button>
-                        </div>
-                </div>
-                </div>
+                <div class="activity-actions">
+                    <!-- Form Setujui -->
+                    <form action="{{ route('pengambilan.approve', $req->id) }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn-approve">✓ Setujui</button>
+                    </form>
+                    
+                    <!-- Form Tolak -->
+                    <form action="{{ route('pengambilan.reject', $req->id) }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn-reject">✕ Tolak</button>
+                    </form>
                 </div>
             </div>
+            @endforeach
         </div>
     </div>
 </body>
 <script>
-    document.querySelectorAll('.btn-approve').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const activityTitle = this.closest('.activity-item').querySelector('.activity-title').textContent.trim();
-            
-            // Tampilkan alert sukses
-            showAlert('success', '✓ Disetujui!', '"' + activityTitle + '" telah berhasil disetujui.');
-            
-            // Ubah tombol jadi status
-            const actions = this.closest('.activity-actions');
-            actions.innerHTML = '<span class="badge badge-accepted">✓ Disetujui</span>';
-        });
-    });
-
-    document.querySelectorAll('.btn-reject').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const activityTitle = this.closest('.activity-item').querySelector('.activity-title').textContent.trim();
-            
-            // Tampilkan alert gagal
-            showAlert('danger', '✕ Ditolak!', '"' + activityTitle + '" telah ditolak.');
-            
-            // Ubah tombol jadi status
-            const actions = this.closest('.activity-actions');
-            actions.innerHTML = '<span class="badge badge-rejected">✕ Ditolak</span>';
-        });
-    });
-
     function showAlert(type, title, message) {
-        // Hapus alert lama kalau ada
-        const existing = document.querySelector('.custom-alert');
-        if (existing) existing.remove();
-
         const colors = {
             success: { bg: '#d1fae5', border: '#6ee7b7', text: '#065f46' },
             danger:  { bg: '#fee2e2', border: '#fca5a5', text: '#991b1b' }
         };
 
         const alert = document.createElement('div');
-        alert.className = 'custom-alert';
         alert.style.cssText = `
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 9999;
-            background: ${colors[type].bg};
-            border: 1.5px solid ${colors[type].border};
-            color: ${colors[type].text};
-            border-radius: 10px;
-            padding: 14px 20px;
-            min-width: 300px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-            font-size: 14px;
-            animation: slideIn 0.3s ease;
+            position: fixed; top: 24px; right: 24px; z-index: 9999;
+            background: ${colors[type].bg}; border: 1.5px solid ${colors[type].border};
+            color: ${colors[type].text}; border-radius: 10px; padding: 14px 20px;
+            min-width: 300px; box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+            font-size: 14px; animation: slideIn 0.3s ease;
         `;
 
         alert.innerHTML = `
             <div style="font-weight: 600; font-size: 15px; margin-bottom: 4px;">${title}</div>
             <div>${message}</div>
         `;
-
         document.body.appendChild(alert);
 
-        // Hilang otomatis setelah 3 detik
-        setTimeout(function() {
-            alert.style.transition = 'opacity 0.4s';
+        setTimeout(() => {
             alert.style.opacity = '0';
-            setTimeout(function() { alert.remove(); }, 400);
+            setTimeout(() => alert.remove(), 400);
         }, 3000);
-}
+    }
+
+    // OTOMATIS panggil alert kalau Laravel kirim pesan sukses/error
+    @if(session('success'))
+        showAlert('success', 'Berhasil!', "{{ session('success') }}");
+    @endif
+    @if(session('error'))
+        showAlert('danger', 'Gagal!', "{{ session('error') }}");
+    @endif
+
+    function showLogoutModal() { document.getElementById('logoutModal').style.display = 'flex'; }
+    function closeLogoutModal() { document.getElementById('logoutModal').style.display = 'none'; }
+    function confirmLogout() { window.location.href = "{{ route('logout') }}";}
 </script>
 </html>

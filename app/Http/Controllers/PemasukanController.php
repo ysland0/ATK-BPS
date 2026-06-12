@@ -70,4 +70,36 @@ class PemasukanController extends Controller
         $pemasukan->delete();
         return back()->with('success', 'Data pemasukan berhasil dihapus dan stok disesuaikan.');
     }
+
+    public function update(Request $request, $id)
+    {
+        $pemasukan = \App\Models\Pemasukan::findOrFail($id);
+
+        $supplier = $request->tipe_pemasukan === 'transfer' ? 'PUSAT' : $request->supplier;
+        $satuanHarga = $request->tipe_pemasukan === 'transfer' ? 0 : $request->satuan_harga;
+
+        // Rollback stok barang lama
+        $barangLama = \App\Models\Barang::find($pemasukan->barang_id);
+        if ($barangLama) {
+            $barangLama->decrement('stok', $pemasukan->jumlah);
+        }
+
+        // Tambah stok barang baru
+        $barangBaru = \App\Models\Barang::find($request->barang_id);
+        if ($barangBaru) {
+            $barangBaru->increment('stok', $request->jumlah);
+        }
+
+        $pemasukan->update([
+            'tipe_pemasukan' => $request->tipe_pemasukan,
+            'supplier'       => $supplier,
+            'no_surat_jalan' => $request->no_surat_jalan,
+            'barang_id'      => $request->barang_id,
+            'jumlah'         => $request->jumlah,
+            'satuan_harga'   => $satuanHarga,
+            'keterangan'     => $request->keterangan,
+        ]);
+
+        return redirect()->back()->with('success', 'Data pemasukan berhasil diubah!');
+    }
 }

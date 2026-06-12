@@ -12,56 +12,95 @@ class RincianBulananController extends Controller
 {
     public function rinciBulanan(Request $request)
     {
-        // 1. Tangkap filter bulan dan tahun (default bulan & tahun sekarang)
         $bulan = $request->get('bulan', date('m'));
         $tahun = $request->get('tahun', date('Y'));
 
-        // 2. Ambil data PEMASUKAN (Pembelian & Transfer)
-        $pemasukan = Pemasukan::with('barang')
-            ->whereMonth('tanggal_pemasukan', $bulan)
-            ->whereYear('tanggal_pemasukan', $tahun)
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'tanggal' => $item->tanggal_pemasukan,
-                    'jenis'   => strtoupper($item->tipe_pemasukan), // PEMBELIAN / TRANSFER
-                    'kode'    => $item->barang->kode_barang ?? '-',
-                    'nama'    => $item->barang->nama_barang ?? '-',
-                    'jumlah'  => $item->jumlah,
-                    'satuan'  => $item->barang->satuan ?? '-',
-                    'harga'   => $item->harga_satuan ?? 0,
-                    'bukti'   => $item->no_surat_jalan ?? '-',
-                    'tag_id'  => $item->supplier ?? 'PUSAT',
-                    'masuk'   => $item->jumlah,
-                    'keluar'  => 0,
+        $pemasukan = \App\Models\Pemasukan::leftJoin('barangs', 'pemasukans.barang_id', '=', 'barangs.id')
+        ->select('pemasukans.*', 'barangs.kode_barang', 'barangs.nama_barang as nama_asli', 'barangs.satuan as satuan_asli')
+        ->whereMonth('pemasukans.tanggal_pemasukan', $bulan)
+        ->whereYear('pemasukans.tanggal_pemasukan', $tahun)
+        ->get()
+        ->map(function ($item) {
+            $harga = $item->harga_satuan ?? 0;
+            return [
+                    'jenis' => $item->tipe_pemasukan == 'pembelian' ? 'BELI' : 'TRANSFER',
+                    'kode' => $item->barang->kode_barang ?? '-',
+                    'nama' => $item->barang->nama_barang ?? '-',
+                    'jumlah' => $item->jumlah,
+                    'satuan' => $item->barang->satuan ?? 'Buah',
+                    'tgl_buku' => $item->created_at->format('d/m/Y'),
+                    'harga_sat' => $item->harga_satuan ?? 0,
+                    'total_harga' => ($item->harga_satuan ?? 0) * $item->jumlah,
+                    'tanggal_dokumen' => \Carbon\Carbon::parse($item->tanggal_pemasukan)->format('d/m/Y'), 
+                    'no_bukti' => $item->no_surat_jalan ?? '-', 
+                    'tag_id' => $item->supplier ?? 'PUSAT',
+                    'tanggal_raw' => $item->tanggal_pemasukan 
                 ];
             });
 
-        // 3. Ambil data PENGAMBILAN (Pakai)
-        $pengambilan = Pengambilan::leftJoin('barangs', 'pengambilans.nama_barang', '=', 'barangs.nama_barang')
-            ->select('pengambilans.*', 'barangs.kode_barang', 'barangs.satuan')
-            ->whereMonth('pengambilans.tanggal', $bulan)
-            ->whereYear('pengambilans.tanggal', $tahun)
-            ->get()
-            ->map(function ($item) {
+        $pengambilan = \App\Models\Pengambilan::leftJoin('barangs', function($join) {
+            $join->on(DB::raw('trim(pengambilans.nama_barang)'), '=', DB::raw('trim(barangs.nama_barang)'));
+        })
+        ->select('pengambilans.*', 'barangs.kode_barang', 'barangs.satuan as satuan_asli')
+        ->where('pengambilans.status', 'approved')
+        ->whereMonth('pengambilans.tanggal', $bulan)
+        ->whereYear('pengambilans.tanggal', $tahun)
+        ->get()
+        ->map(function ($item) {
                 return [
-                    'tanggal' => $item->tanggal,
-                    'jenis'   => 'PAKAI',
-                    'kode'    => $item->kode_barang ?? '-',
-                    'nama'    => $item->nama_barang ?? '-',
-                    'jumlah'  => $item->jumlah,
-                    'satuan'  => $item->satuan ?? '-',
-                    'harga'   => 0,
-                    'bukti'   => '-', // Biasanya No. Bukti Pengambilan jika ada
-                    'tag_id'  => $item->nama_pegawai,
-                    'masuk'   => 0,
-                    'keluar'  => $item->jumlah,
+                    'jenis' => 'PAKAI',
+                    'kode' => $item->kode_barang ?? '-',
+                    'nama' => $item->nama_barang ?? '-',
+                    'jumlah' => $item->jumlah,
+                    'satuan' => 'Buah',
+                    'tgl_buku' => $item->created_at->format('d/m/Y'),
+                    'harga_sat' => 0,
+                    'total_harga' => 0,
+                    'tanggal_dokumen' => \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y'), 
+                    'no_bukti' => $item->no_bukti ?? '-',
+                    'tag_id' => $item->nama_pegawai,
+                    'pemasukan' => 0,
+                    'pengambilan' => 1,
+                    'tanggal_raw' => $item->tanggal 
                 ];
             });
 
-        // 4. Gabungkan dan Urutkan berdasarkan tanggal
-        $allData = $pemasukan->concat($pengambilan)->sortBy('tanggal');
+        $saldoAwalPerBarang = [];
 
-        return view('laporanRinciBulanan', compact('allData', 'bulan', 'tahun'));
+        $semuaBarang = \App\Models\Barang::all();
+
+        foreach ($semuaBarang as $barang) {
+            $totalMasuk = \App\Models\Pemasukan::where('barang_id', $barang->id)
+                ->where(function($q) use ($bulan, $tahun) {
+                    $q->whereYear('tanggal_pemasukan', '<', $tahun)
+                    ->orWhere(function($q2) use ($bulan, $tahun) {
+                        $q2->whereYear('tanggal_pemasukan', $tahun)
+                            ->whereMonth('tanggal_pemasukan', '<', $bulan);
+                    });
+                })
+                ->sum('jumlah');
+
+            $totalKeluar = \App\Models\Pengambilan::where('nama_barang', $barang->nama_barang)
+                ->where('status', 'approved')
+                ->where(function($q) use ($bulan, $tahun) {
+                    $q->whereYear('tanggal', '<', $tahun)
+                    ->orWhere(function($q2) use ($bulan, $tahun) {
+                        $q2->whereYear('tanggal', $tahun)
+                            ->whereMonth('tanggal', '<', $bulan);
+                    });
+                })
+                ->sum('jumlah');
+
+            $saldoAwalPerBarang[$barang->kode_barang] = [
+                'kode'   => $barang->kode_barang,
+                'nama'   => $barang->nama_barang,
+                'satuan' => $barang->satuan,
+                'saldo'  => $barang->stok_awal + $totalMasuk - $totalKeluar
+            ];
+
+        }
+        $allData = $pemasukan->concat($pengambilan)->sortBy('tanggal_raw');
+
+        return view('laporanRinciBulanan', compact('allData', 'bulan', 'tahun', 'saldoAwalPerBarang'));
     }
 }

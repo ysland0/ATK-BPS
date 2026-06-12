@@ -5,6 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Barang - Pencatatan ATK</title>
     <link rel="stylesheet" href="{{ asset('assets/css/masterBarang.css') }}">
+    <style>
+        .pagination-wrapper {
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            cursor: grab;
+            scrollbar-width: thin;
+        }
+        .pagination-wrapper::-webkit-scrollbar { height: 5px; }
+        .pagination-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .pagination-container {
+            display: inline-flex;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: white;
+            white-space: nowrap;
+        }
+
+        .pagination-btn {
+            padding: 10px 18px;
+            border: none;
+            border-right: 1px solid #e5e7eb;
+            background: white;
+            color: #4a5fc1;
+            cursor: pointer;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .pagination-btn.active {
+            background: #4a5fc1 !important;
+            color: white !important;
+        }
+
+        /* Styling Tombol Aksi Squircle */
+        .btn-action {
+            width: 32px; height: 32px; border-radius: 10px; border: none;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .view-btn { background-color: #e0f2fe; color: #0369a1; }
+        .edit-btn { background-color: #fef3c7; color: #b45309; }
+        .delete-btn { background-color: #fee2e2; color: #b91c1c; }
+    </style>
     
 </head>
 <body>
@@ -153,7 +200,7 @@
                         <th style="width: 130px;">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tableBody">
                     @foreach($barangs as $b)
                     <tr>
                         <td>
@@ -174,10 +221,7 @@
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <button class="action-btn view-btn" onclick="viewItem('@json($b)')" title="Lihat">
-                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                </button>
-                                <button class="action-btn edit-btn" onclick="editItem('@json($b)')" title="Edit">
+                                <button class="action-btn edit-btn" onclick="editItem(this)" data-barang='@json($b)' title="Edit">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
                                 </button>
                                 <form action="{{ route('barang.destroy', $b->id) }}" method="POST" style="margin:0;">
@@ -192,6 +236,12 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding: 16px 4px 4px; flex-wrap:wrap; gap:12px;">
+                <span style="font-size:13px; color:#6b7280;" id="paginationInfo"></span>
+                <div id="paginationContainer" style="display:inline-flex; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; background:white;">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -240,10 +290,8 @@
                             <label>Kategori </label>
                             <select name="kategori" id="kategori" required>
                                 <option value="">Pilih Kategori</option>
-                                <option value="Alat Tulis">Alat Tulis</option>
-                                <option value="Kertas">Kertas</option>
-                                <option value="Perlengkapan">Perlengkapan</option>
-                                <option value="Elektronik">Elektronik</option>
+                                <option value="Beli">Pembelian</option>
+                                <option value="Transfer">Transfer Masuk</option>
                             </select>
                         </div>
 
@@ -251,6 +299,10 @@
                             <label>Stok Awal </label>
                             <input type="number" name="stok_awal" id="stokAwal" placeholder="0" min="0" required>
                         </div>
+                    </div>
+
+                    <div id="stokKeterangan" style="display:none; margin-bottom:15px;">
+                        <small style="color:#9ca3af;">Stok hanya bisa diubah melalui menu Stock Awal Tahun</small>
                     </div>
 
                     <div class="modal-buttons">
@@ -281,51 +333,138 @@
     </div>
 
     <script>
+        // ========== PAGINATION ==========
+        const ROWS_PER_PAGE = 10;
+        let currentPage = 1;
+        let allRows = [];
+        let filteredRows = [];
+
+        function initPagination() {
+            allRows = Array.from(document.querySelectorAll('#tableBody tr'));
+            filteredRows = [...allRows];
+            renderPage(1);
+        }
+
+        function renderPage(page) {
+            currentPage = page;
+            const total = filteredRows.length;
+            const totalPages = Math.max(1, Math.ceil(total / ROWS_PER_PAGE));
+            currentPage = Math.min(currentPage, totalPages);
+
+            const start = (currentPage - 1) * ROWS_PER_PAGE;
+            const end = start + ROWS_PER_PAGE;
+
+            // Sembunyikan semua dulu
+            allRows.forEach(r => r.style.display = 'none');
+
+            // Tampilkan baris yang sesuai filter + halaman
+            filteredRows.forEach((r, i) => {
+                r.style.display = (i >= start && i < end) ? '' : 'none';
+            });
+
+            // Info
+            const from = total === 0 ? 0 : start + 1;
+            const to = Math.min(end, total);
+            document.getElementById('paginationInfo').textContent =
+                `Menampilkan ${from}–${to} dari ${total} data`;
+
+            // Render tombol
+            renderButtons(totalPages);
+        }
+
+        function renderButtons(totalPages) {
+            const container = document.getElementById('paginationContainer');
+            container.innerHTML = '';
+
+            const btnStyle = `padding:8px 14px; border:none; border-right:1px solid #e5e7eb;
+                background:white; color:#4a5fc1; cursor:pointer; font-weight:600;
+                font-size:13px; transition:background 0.15s;`;
+            const activeStyle = `background:#4a5fc1 !important; color:white !important;`;
+
+            // Prev
+            const prev = document.createElement('button');
+            prev.innerHTML = '&#8592;';
+            prev.style.cssText = btnStyle;
+            prev.disabled = currentPage === 1;
+            prev.style.opacity = currentPage === 1 ? '0.4' : '1';
+            prev.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
+            prev.onclick = () => renderPage(currentPage - 1);
+            container.appendChild(prev);
+
+            // Nomor halaman (tampilkan maks 5)
+            const pages = getPageRange(currentPage, totalPages);
+            pages.forEach(p => {
+                if (p === '...') {
+                    const dot = document.createElement('span');
+                    dot.textContent = '...';
+                    dot.style.cssText = `padding:8px 10px; border-right:1px solid #e5e7eb;
+                        color:#9ca3af; font-size:13px; background:white;`;
+                    container.appendChild(dot);
+                } else {
+                    const btn = document.createElement('button');
+                    btn.textContent = p;
+                    btn.style.cssText = btnStyle + (p === currentPage ? activeStyle : '');
+                    btn.onclick = () => renderPage(p);
+                    container.appendChild(btn);
+                }
+            });
+
+            // Next
+            const next = document.createElement('button');
+            next.innerHTML = '&#8594;';
+            next.style.cssText = btnStyle + 'border-right:none;';
+            next.disabled = currentPage === totalPages;
+            next.style.opacity = currentPage === totalPages ? '0.4' : '1';
+            next.style.cursor = currentPage === totalPages ? 'not-allowed' : 'pointer';
+            next.onclick = () => renderPage(currentPage + 1);
+            container.appendChild(next);
+        }
+
+        function getPageRange(current, total) {
+            if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+            if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+            if (current >= total - 3) return [1, '...', total-4, total-3, total-2, total-1, total];
+            return [1, '...', current-1, current, current+1, '...', total];
+        }
+
+        // ========== SEARCH ==========
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            filteredRows = allRows.filter(r => r.textContent.toLowerCase().includes(term));
+            renderPage(1);
+        });
+
+        // Init saat DOM siap
+        document.addEventListener('DOMContentLoaded', initPagination);
+
+
+        // ========== MODAL ==========
         function showAddModal() {
             document.getElementById('modalTitle').textContent = 'Tambah Barang Baru';
             document.getElementById('barangForm').action = "{{ route('barang.store') }}";
             document.getElementById('methodField').innerHTML = '';
             document.getElementById('barangForm').reset();
+            document.getElementById('stokAwal').closest('.form-group').style.display = 'block';
             document.getElementById('addModal').style.display = 'flex';
+            document.getElementById('stokKeterangan').style.display = 'none';
         }
 
         function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
 
-        function editItem(data) {
+        function editItem(btn) {
+            const data = JSON.parse(btn.getAttribute('data-barang'));
+
             document.getElementById('modalTitle').textContent = 'Edit Barang';
             document.getElementById('barangForm').action = '/masterBarang/' + data.id;
-            document.getElementById('methodField').innerHTML = '@method("PUT")';
-            
+            document.getElementById('methodField').innerHTML = '<input type="hidden" name="_method" value="PUT">';
             document.getElementById('namaBarang').value = data.nama_barang;
             document.getElementById('kodeBarang').value = data.kode_barang;
             document.getElementById('satuan').value = data.satuan;
             document.getElementById('kategori').value = data.kategori;
-            document.getElementById('stokAwal').value = data.stok_awal;
-            
+            document.getElementById('stokAwal').closest('.form-group').style.display = 'none';
+            document.getElementById('stokKeterangan').style.display = 'block'; 
             document.getElementById('addModal').style.display = 'flex';
         }
-
-        function viewItem(data) {
-            const content = `
-                <p><strong>Nama:</strong> ${data.nama_barang}</p>
-                <p><strong>Kode:</strong> ${data.kode_barang}</p>
-                <p><strong>Kategori:</strong> ${data.kategori}</p>
-                <p><strong>Stok:</strong> ${data.stok} ${data.satuan}</p>
-            `;
-            document.getElementById('viewDetailContent').innerHTML = content;
-            document.getElementById('viewModal').style.display = 'flex';
-        }
-
-        function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
-
-        // Search Function
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('#tableBody tr');
-            rows.forEach(row => {
-                row.style.display = row.textContent.toLowerCase().includes(searchTerm) ? '' : 'none';
-            });
-        });
 
         window.onclick = function(event) {
             if (event.target.className === 'modal-overlay') {
@@ -336,7 +475,7 @@
 
         function showLogoutModal() { document.getElementById('logoutModal').style.display = 'flex'; }
         function closeLogoutModal() { document.getElementById('logoutModal').style.display = 'none'; }
-        function confirmLogout() { window.location.href = '/'; }
+        function confirmLogout() {window.location.href = "{{ route('logout') }}";}
     </script>
 </body>
 </html>

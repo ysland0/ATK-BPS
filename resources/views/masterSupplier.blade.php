@@ -170,13 +170,8 @@
                         <td>{{ $s->email }}</td>
                         <td>
                             <div class="action-buttons">
-                                <!-- View -->
-                                <button class="action-btn view-btn" onclick="viewItem('@json($s)')">
-                                    <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
-                                </button>
-                                
                                 <!-- Edit -->
-                                <button class="action-btn edit-btn" onclick="editItem('@json($s)')">
+                               <button class="action-btn edit-btn" onclick="editItem(this)" data-supplier='@json($s)'>
                                     <svg fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
                                 </button>
 
@@ -287,64 +282,53 @@
         </div>
     </div>
 
-    <script>
-        // Modal Tambah
-        function showAddModal() {
-            document.getElementById('modalTitle').textContent = 'Tambah Supplier Baru';
-            document.getElementById('supplierForm').action = "{{ route('supplier.store') }}";
-            document.getElementById('methodField').innerHTML = '';
-            document.getElementById('supplierForm').reset();
-            document.getElementById('addModal').style.display = 'flex';
-        }
+<script>
+    function showAddModal() {
+        document.getElementById('modalTitle').textContent = 'Tambah Supplier Baru';
+        document.getElementById('supplierForm').action = "{{ route('supplier.store') }}";
+        document.getElementById('methodField').innerHTML = '';
+        document.getElementById('supplierForm').reset();
+        document.getElementById('addModal').style.display = 'flex';
+    }
 
-        // Modal Edit
-        function editItem(data) {
-            document.getElementById('modalTitle').textContent = 'Edit Supplier';
-            document.getElementById('supplierForm').action = '/masterSupplier/' + data.id;
-            document.getElementById('methodField').innerHTML = '@method("PUT")';
-            
-            document.getElementById('kodeSupplier').value = data.kode_supplier;
-            document.getElementById('namaSupplier').value = data.nama_supplier;
-            document.getElementById('namaPIC').value = data.nama_pic;
-            document.getElementById('telpPIC').value = data.telp_pic;
-            document.getElementById('alamat').value = data.alamat;
-            document.getElementById('email').value = data.email;
-            
-            document.getElementById('addModal').style.display = 'flex';
-        }
+    function editItem(btn) {
+        const data = JSON.parse(btn.getAttribute('data-supplier'));
 
-        // Modal View
-        function viewItem(data) {
-            const content = `
-                <p><strong>Kode:</strong> ${data.kode_supplier}</p>
-                <p><strong>Nama:</strong> ${data.nama_supplier}</p>
-                <p><strong>PIC:</strong> ${data.nama_pic} (${data.telp_pic})</p>
-                <p><strong>Email:</strong> ${data.email}</p>
-                <p><strong>Alamat:</strong> ${data.alamat}</p>
-            `;
-            document.getElementById('viewContent').innerHTML = content;
-            document.getElementById('viewModal').style.display = 'flex';
-        }
+        document.getElementById('modalTitle').textContent = 'Edit Supplier';
+        document.getElementById('supplierForm').action = '/masterSupplier/' + data.id;
+        document.getElementById('methodField').innerHTML = '<input type="hidden" name="_method" value="PUT">';
 
-        function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
-        function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
+        document.getElementById('kodeSupplier').value = data.kode_supplier;
+        document.getElementById('namaSupplier').value = data.nama_supplier;
+        document.getElementById('namaPIC').value = data.nama_pic;
+        document.getElementById('telpPIC').value = data.telp_pic;
+        document.getElementById('alamat').value = data.alamat;
+        document.getElementById('email').value = data.email;
 
-        // Search Function
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('#tableBody tr');
-            rows.forEach(row => {
-                row.style.display = row.textContent.toLowerCase().includes(searchTerm) ? '' : 'none';
-            });
+        document.getElementById('addModal').style.display = 'flex';
+    }
+
+    function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+    function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
+    function showLogoutModal() { document.getElementById('logoutModal').style.display = 'flex'; }
+    function closeLogoutModal() { document.getElementById('logoutModal').style.display = 'none'; }
+    function confirmLogout() { window.location.href = "{{ route('logout') }}"; }
+
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(searchTerm) ? '' : 'none';
         });
+    });
 
-        // Close on outside click
-        window.onclick = function(event) {
-            if (event.target.className === 'modal-overlay') {
-                closeAddModal();
-                closeViewModal();
-            }
+    window.onclick = function(event) {
+        if (event.target.className === 'modal-overlay') {
+            closeAddModal();
+            closeViewModal();
+            closeLogoutModal();
         }
-    </script>
+    }
+</script>
 </body>
 </html>

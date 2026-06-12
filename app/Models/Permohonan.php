@@ -5,19 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Pengambilan extends Model
+class Permohonan extends Model
 {
     use HasFactory;
 
-    protected $table = 'pengambilans';
-
     protected $fillable = [
-        'nama_pegawai', 
-        'tanggal', 
-        'nama_barang', 
-        'jumlah', 
-        'tanda_tangan',
+        'nama_pegawai',
+        'request_barang',
         'status',
-        'no_bukti'
     ];
 }

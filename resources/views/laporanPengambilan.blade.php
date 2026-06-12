@@ -283,12 +283,17 @@
                     </thead>
                     <tbody>
                         @foreach($rekapBulanan as $rk)
-                        <tr>
+                        <tr data-nobukti="{{ $rk->no_bukti }}">
                             <td>{{ \Carbon\Carbon::parse($rk->tanggal)->format('d/m/Y') }}</td>
                             <td>{{ $rk->kode_barang ?? '-' }}</td>
                             <td>{{ $rk->nama_barang }}</td>
                             <td>{{ $rk->satuan ?? 'Buah' }}</td>
                             <td style="font-weight: bold;">{{ $rk->total_diambil }}</td>
+                            <td>
+                                <span style="background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; text-transform: capitalize;">
+                                    Approved
+                                </span>
+                             </td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -307,16 +312,17 @@
                         <th>Banyaknya</th>
                         <th>Nama Pengambil</th>
                         <th>Tanda Tangan</th>
+                        <th>Status</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($pengambilans as $p)
-                    <tr>
+                    <tr data-nobukti="{{ $p->no_bukti }}">
                         <td>{{ \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y') }}</td>
                         
                         <td style="font-weight: bold; color: #4b5563;">
-                        {{ $p->created_at->format('H:i') }} WIB
+                        {{ $p->created_at->timezone('Asia/Jakarta')->format('H:i') }} WIB
                         </td>
                         <td>{{ $p->kode_barang }}</td>
                         <td>{{ $p->nama_barang }}</td>
@@ -346,8 +352,13 @@
                             @endif
                         </td>
                         <td>
+                            <span style="background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; text-transform: capitalize;">
+                                Approved
+                            </span>
+                        </td>
+                        <td>
                             <div class="action-buttons">
-                                <button class="action-btn edit-btn" onclick="editItem('{{ $p->id }}')">
+                                <button class="action-btn edit-btn" onclick="editItem('{{ $p->id }}', '{{ addslashes($p->nama_barang) }}', '{{ $p->jumlah }}')">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
                         </svg>
@@ -368,6 +379,69 @@
                 </tbody>
             </table>
         </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit -->
+    <div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:white; border-radius:16px; padding:30px; width:90%; max-width:450px; box-shadow:0 20px 60px rgba(0,0,0,0.3); max-height:90vh; overflow-y:auto;">
+            <h3 style="margin-bottom:20px; font-size:18px; font-weight:700; color:#1f2937;">Edit Pengambilan</h3>
+            <form id="editForm" method="POST">
+                @csrf
+                @method('PUT')
+
+                <div style="margin-bottom:15px;">
+                    <label style="font-size:14px; font-weight:600; color:#374151;">Nama Barang</label>
+                    <select id="editNamaBarang" name="nama_barang" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin-top:6px; font-size:14px;">
+                        @foreach($barangs as $b)
+                            <option value="{{ $b->nama_barang }}">{{ $b->nama_barang }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div style="margin-bottom:15px;">
+                    <label style="font-size:14px; font-weight:600; color:#374151;">Jumlah</label>
+                    <input type="number" id="editJumlah" name="jumlah" min="1"
+                        style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin-top:6px; font-size:14px; box-sizing:border-box;">
+                </div>
+
+                <!-- Field nama pengambil (opsional) -->
+                <div style="margin-bottom:15px;">
+                    <label style="font-size:14px; font-weight:600; color:#374151;">
+                        Nama Pengambil 
+                    </label>
+                    <select id="editNamaPegawai" name="nama_pegawai" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin-top:6px; font-size:14px;" onchange="toggleTTDSection()">
+                        <option value="">-- Nama Pegawai --</option>
+                        @foreach($pegawais as $pg)
+                            <option value="{{ $pg->nama }}">{{ $pg->nama }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- TTD baru, muncul hanya kalau nama diganti -->
+                <div id="ttdBaruSection" style="display:none; margin-bottom:15px;">
+                    <label style="font-size:14px; font-weight:600; color:#374151;">Tanda Tangan Baru</label>
+                    <p style="font-size:12px; color:#9ca3af; margin:4px 0 8px;">TTD lama akan dihapus dan diganti dengan yang baru</p>
+                    <canvas id="ttdCanvas" width="380" height="150" 
+                        style="border:2px dashed #d1d5db; border-radius:8px; cursor:crosshair; touch-action:none; display:block;"></canvas>
+                    <input type="hidden" id="editTandaTangan" name="tanda_tangan">
+                    <button type="button" onclick="clearTTD()" 
+                        style="margin-top:8px; padding:6px 14px; background:#f3f4f6; border:1px solid #d1d5db; border-radius:6px; font-size:13px; cursor:pointer;">
+                        Reset
+                    </button>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button type="button" onclick="closeEditModal()"
+                        style="flex:1; padding:12px; background:#f3f4f6; color:#4b5563; border:2px solid #e5e7eb; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer;">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        style="flex:1; padding:12px; background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color:white; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer;">
+                        Simpan
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -448,43 +522,54 @@
 
         const logoBase64 = 'data:image/png;base64,{!! base64_encode(file_get_contents(public_path("assets/images/logoBPS.png"))) !!}';
             
-            function cetakPDF() {
+        function cetakPDF() {
                 const jenis = document.getElementById('jenisLaporan').value;
-                const tglInput = document.getElementById('tanggal').value;
+                const bulanSelect = document.getElementById('bulan');
+                const namaBulan = bulanSelect.options[bulanSelect.selectedIndex].text;
                 const tahunInput = document.getElementById('tahun').value;
+                const tglInput = document.getElementById('tanggal').value;
                 
-                // Logika Tanggal (Harian otomatis, Bulanan titik-titik)
+                let infoKananAtas = "";
+                if (jenis === 'bulanan') {
+                    infoKananAtas = `Bulan : ${namaBulan}`;
+                } else {
+                    const firstRow = document.querySelector('#laporanHarianTable tbody tr');
+                    const noBukti = firstRow ? firstRow.getAttribute('data-nobukti') : "................";
+                    infoKananAtas = `No : ${noBukti}`;
+                }
+
                 let tanggalIndo = "...........................";
-                if (jenis !== 'bulanan') {
-                    let dateObj = tglInput ? new Date(tglInput) : new Date();
+                if (jenis === 'harian' && tglInput) {
+                    let dateObj = new Date(tglInput);
                     tanggalIndo = dateObj.toLocaleDateString('id-ID', { 
                         day: 'numeric', month: 'long', year: 'numeric' 
                     });
                 }
 
                 let tableRows = "";
-                // Kita ambil data dari tabel harian untuk mendapatkan detail barang & TTD
                 const rows = document.querySelectorAll('#laporanHarianTable tbody tr');
                 
                 if (rows.length > 0 && rows[0].innerText.trim() !== "Belum ada data") {
                     rows.forEach((row, index) => {
                         const cells = row.querySelectorAll('td');
-                        // Urutan Kolom: No, Nama Barang, Satuan, Banyaknya, Pengambil, TTD
+                        // Ekstrak TTD dari fungsi onclick tombol view
+                        const ttdButton = cells[7].querySelector('button');
+                        const ttdBase64 = ttdButton ? ttdButton.getAttribute('onclick').split("'")[1] : "";
+                        
                         tableRows += `
                             <tr>
                                 <td style="text-align: center;">${index + 1}</td>
-                                <td>${cells[3].textContent}</td>
+                                <td style="text-align: left;">${cells[3].textContent}</td>
                                 <td style="text-align: center;">${cells[4].textContent}</td>
                                 <td style="text-align: center;">${cells[5].textContent}</td>
-                                <td>${cells[6].textContent}</td>
+                                <td style="text-align: left;">${cells[6].textContent}</td>
                                 <td style="text-align: center;">
-                                    <img src="${cells[7].querySelector('button').getAttribute('onclick').split("'")[1]}" style="height: 25px;">
+                                    ${ttdBase64 ? `<img src="${ttdBase64}" style="height: 30px;">` : '-'}
                                 </td>
                             </tr>`;
                     });
                 }
 
-                // Baris kosong tambahan (total 10 baris agar mirip surat asli)
                 for (let i = rows.length + 1; i <= 10; i++) {
                     tableRows += `<tr><td style="height: 25px; text-align:center;">${i}</td><td></td><td></td><td></td><td></td><td></td></tr>`;
                 }
@@ -547,7 +632,7 @@
                                 </div>
                             </div>
                             <div class="doc-info">
-                                No : ......................<br>
+                                ${infoKananAtas}<br>
                                 Tahun : ${tahunInput}
                             </div>
                         </div>
@@ -580,8 +665,8 @@
                                 <p>Mengetahui,</p>
                                 <p>Kepala Subbagian Umum</p>
                                 <div class="signature-space"></div>
-                                <p class="name-underline">IRMA WULANDARI</p>
-                                <p>NIP. 19880128 199403 2-01</p>
+                                <p class="name-underline">DEWI FENTY EKASARI, SST.,M.Si</p>
+                                <p>NIP. 198102082003122003</p>
                             </div>
 
                             <!-- SISI KANAN -->
@@ -607,8 +692,56 @@
             }
 
         // CRUD Functions
-        function editItem(id) {
-            alert('Edit pengambilan ID: ' + id);
+        // ====== EDIT MODAL ======
+        let ttdCtx, ttdDrawing = false;
+
+        function editItem(id, namaBarang, jumlah) {
+            document.getElementById('editNamaBarang').value = namaBarang;
+            document.getElementById('editJumlah').value = jumlah;
+            document.getElementById('editNamaPegawai').value = '';
+            document.getElementById('ttdBaruSection').style.display = 'none';
+            document.getElementById('editForm').action = '/edit-pengambilan/' + id;
+            document.getElementById('editModal').style.display = 'flex';
+            initTTDCanvas();
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function toggleTTDSection() {
+            const nama = document.getElementById('editNamaPegawai').value;
+            const section = document.getElementById('ttdBaruSection');
+            if (nama && nama !== '') {
+                section.style.display = 'block';
+                clearTTD();
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        function initTTDCanvas() {
+            const canvas = document.getElementById('ttdCanvas');
+            ttdCtx = canvas.getContext('2d');
+            ttdCtx.strokeStyle = '#1e40af';
+            ttdCtx.lineWidth = 2;
+            ttdCtx.lineCap = 'round';
+
+            canvas.onmousedown = (e) => { ttdDrawing = true; ttdCtx.beginPath(); ttdCtx.moveTo(e.offsetX, e.offsetY); };
+            canvas.onmousemove = (e) => { if (!ttdDrawing) return; ttdCtx.lineTo(e.offsetX, e.offsetY); ttdCtx.stroke(); };
+            canvas.onmouseup = () => { ttdDrawing = false; document.getElementById('editTandaTangan').value = canvas.toDataURL(); };
+            canvas.onmouseleave = () => { ttdDrawing = false; };
+
+            // Touch support
+            canvas.ontouchstart = (e) => { e.preventDefault(); ttdDrawing = true; const t = e.touches[0]; const r = canvas.getBoundingClientRect(); ttdCtx.beginPath(); ttdCtx.moveTo(t.clientX - r.left, t.clientY - r.top); };
+            canvas.ontouchmove = (e) => { e.preventDefault(); if (!ttdDrawing) return; const t = e.touches[0]; const r = canvas.getBoundingClientRect(); ttdCtx.lineTo(t.clientX - r.left, t.clientY - r.top); ttdCtx.stroke(); document.getElementById('editTandaTangan').value = canvas.toDataURL(); };
+            canvas.ontouchend = () => { ttdDrawing = false; };
+        }
+
+        function clearTTD() {
+            const canvas = document.getElementById('ttdCanvas');
+            ttdCtx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('editTandaTangan').value = '';
         }
 
         function deleteItem(id) {
@@ -626,8 +759,9 @@
             document.getElementById('logoutModal').style.display = 'none';
         }
 
-        function confirmLogout() {
-            window.location.href = '/';
+       
+        function confirmLogout() { 
+            window.location.href = "{{ route('logout') }}";
         }
 
         window.onclick = function(event) {

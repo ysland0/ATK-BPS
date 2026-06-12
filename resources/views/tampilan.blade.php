@@ -672,6 +672,16 @@
                 gap: 40px;
             }
         }
+
+        #barangList {
+            max-height: 400px; 
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        /* Mempercantik scrollbar */
+        #barangList::-webkit-scrollbar { width: 5px; }
+        #barangList::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -692,7 +702,7 @@
             <a href="#panduan" class="nav-link">Panduan</a>
             <a href="#grafik" class="nav-link ">Grafik</a>
             <a href="#kontak" class="nav-link ">Kontak</a>
-            <a href="/login" class="btn-login">Login Admin</a>
+            <a href="{{ route('login') }}" class="btn-login">Login Admin</a>
         </div>
 
         <!-- SCRIPT TARUH DI SINI -->
@@ -766,70 +776,26 @@
         <div class="overview-grid">
 
         <!-- LEFT: LIST BARANG -->
-        <div class="top-items">
-            <h3>Daftar Barang Tersedia</h3>
-
-            <input type="text" id="searchBarang" placeholder="Cari nama barang..."
-                style="width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #e2e8f0;">
-
-            <div id="barangList">
-
-                <div class="item-row">
-                    <div style="display:flex; align-items:center;">
-                        <div class="item-avatar">ATK</div>
-                        <div class="item-info">
-                            <h4>Pulpen</h4>
-                            <p>Stok: 20</p>
-                        </div>
+        <div id="barangList">
+            @foreach($barangs as $b)
+            <div class="item-row">
+                <div style="display:flex; align-items:center;">
+                    <div class="item-avatar">ATK</div>
+                    <div class="item-info">
+                        <h4>{{ $b->nama_barang }}</h4>
+                        <p>Stok: {{ $b->stok }}</p>
                     </div>
-                    <span class="item-badge badge-tersedia">Tersedia</span>
                 </div>
-
-                <div class="item-row">
-                    <div style="display:flex; align-items:center;">
-                        <div class="item-avatar">ATK</div>
-                        <div class="item-info">
-                            <h4>Buku Tulis</h4>
-                            <p>Stok: 15</p>
-                        </div>
-                    </div>
+                
+                @if($b->stok > 10)
                     <span class="item-badge badge-tersedia">Tersedia</span>
-                </div>
-
-                <div class="item-row">
-                    <div style="display:flex; align-items:center;">
-                        <div class="item-avatar">ATK</div>
-                        <div class="item-info">
-                            <h4>Spidol</h4>
-                            <p>Stok: 8</p>
-                        </div>
-                    </div>
+                @elseif($b->stok > 0)
                     <span class="item-badge badge-digunakan">Menipis</span>
-                </div>
-
-                <div class="item-row">
-                    <div style="display:flex; align-items:center;">
-                        <div class="item-avatar">ATK</div>
-                        <div class="item-info">
-                            <h4>Kertas A4</h4>
-                            <p>Stok: 50</p>
-                        </div>
-                    </div>
-                    <span class="item-badge badge-tersedia">Tersedia</span>
-                </div>
-
-                <div class="item-row">
-                    <div style="display:flex; align-items:center;">
-                        <div class="item-avatar">ATK</div>
-                        <div class="item-info">
-                            <h4>Stapler</h4>
-                            <p>Stok: 5</p>
-                        </div>
-                    </div>
-                    <span class="item-badge badge-digunakan">Menipis</span>
-                </div>
-
+                @else
+                    <span class="item-badge badge-kosong">Habis</span>
+                @endif
             </div>
+            @endforeach
         </div>
 
         <!-- RIGHT SIDE -->
@@ -840,14 +806,14 @@
 
                 <div class="stat-card">
                     <div class="stat-info">
-                        <h3>18</h3>
+                        <h3>{{ $totalBarangTersedia }}</h3>
                         <p>Barang Tersedia</p>
                     </div>
                 </div>
 
                 <div class="stat-card">
                     <div class="stat-info">
-                        <h3>27</h3>
+                        <h3>{{ $totalDiambilBulanan }}</h3>
                         <p>Diambil Bulanan</p>
                     </div>
                 </div>
@@ -931,114 +897,81 @@
     </footer>
 
     <script>
-        // Chart.js - Demand Chart
-        const ctx = document.getElementById('demandChart').getContext('2d');
-        
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.15)');
-        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.01)');
-        
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Aug', 'Sep', 'Oct', 'Dec', 'Jan'],
-                datasets: [{
-                    label: 'Permintaan Barang',
-                    data: [120, 190, 250, 320, 280, 350, 420, 480, 390, 550, 480, 620],
-                    borderColor: '#6366f1',
-                    backgroundColor: gradient,
-                    borderWidth: 2.5,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 0,
-                    pointHoverRadius: 5,
-                    pointHoverBackgroundColor: '#6366f1',
-                    pointHoverBorderColor: '#fff',
-                    pointHoverBorderWidth: 2
-                }]
+    // 1. CHART.JS - Data dari Database
+    const ctx = document.getElementById('demandChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: @json($chartLabels), // Label bulan dari controller
+            datasets: [{
+                label: 'Permintaan Barang',
+                data: @json($chartData), // Data angka dari controller
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    titleColor: '#1e293b',
+                    bodyColor: '#475569',
+                    borderColor: '#e2e8f0',
+                    borderWidth: 1,
+                    padding: 10,
+                    displayColors: false
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: 5, // Memberikan ruang kosong di atas angka tertinggi (jika data rendah)
+                    ticks: {
+                        precision: 0, // Memastikan angka bulat (tidak ada koma)
+                        stepSize: 1,  // Loncat 1 per 1 (0, 1, 2, 3...)
+                        font: { size: 12 }
                     },
-                    tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        padding: 12,
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
-                        borderColor: '#334155',
-                        borderWidth: 1,
-                        displayColors: false,
-                        callbacks: {
-                            label: function(context) {
-                                return context.parsed.y + ' permintaan';
-                            }
-                        }
+                    grid: {
+                        color: '#f1f5f9',
+                        drawBorder: false
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 700,
-                        grid: {
-                            color: '#f1f5f9',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            },
-                            padding: 8
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false,
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            },
-                            padding: 8
-                        }
-                    }
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 12 } }
+                }
+            },
+            // Memunculkan titik di setiap bulan agar tidak "polos" banget
+            elements: {
+                point: {
+                    radius: 4,
+                    hoverRadius: 6,
+                    backgroundColor: '#6366f1',
+                    borderWidth: 2,
+                    borderColor: '#fff'
                 }
             }
-        });
-    </script>
-    <script>
-        const searchInput = document.getElementById("searchBarang");
+        }
+    });
+
+    // 2. FITUR SEARCH - Realtime
+    const searchInput = document.getElementById("searchBarang");
+    searchInput.addEventListener("keyup", function() {
+        const keyword = this.value.toLowerCase();
         const items = document.querySelectorAll("#barangList .item-row");
 
-        // 🔹 tampilkan hanya 5 awal
-        function showDefaultItems() {
-            items.forEach((item, index) => {
-                item.style.display = index < 5 ? "flex" : "none";
-            });
-        }
-
-        // 🔹 search filter
-        searchInput.addEventListener("keyup", function() {
-            const keyword = this.value.toLowerCase();
-
-            items.forEach(item => {
-                const text = item.innerText.toLowerCase();
-                if (text.includes(keyword)) {
-                    item.style.display = "flex";
-                } else {
-                    item.style.display = "none";
-                }
-            });
+        items.forEach(item => {
+            const text = item.innerText.toLowerCase();
+            item.style.display = text.includes(keyword) ? "flex" : "none";
         });
-
-        // init
-        showDefaultItems();
+    });
     </script>
 </body>
 </html>

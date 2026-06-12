@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('nama_barang');
             $table->integer('jumlah');
             $table->longText('tanda_tangan')->nullable(); 
+            $table->string('no_bukti')->nullable();
             $table->timestamps();
     });
 

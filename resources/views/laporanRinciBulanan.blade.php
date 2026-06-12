@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Rinci Bulanan - Pencatatan ATK</title>
-    <!-- SheetJS Library untuk Excel Export -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <link rel="stylesheet" href="{{ asset('assets/css/laporanRinciBulanan.css') }}">
 </head>
 <body>
@@ -113,7 +113,7 @@
     <div class="main-content">
         <!-- Page Header -->
         <div class="page-header">
-            <h1>Laporan Rekap Persediaan Barang - FEBRUARI 2026</h1>
+           <h1>Laporan Rekap Persediaan Barang - {{ strtoupper(\Carbon\Carbon::create()->month((int)$bulan)->translatedFormat('F')) }} {{ $tahun }}</h1>
         </div>
 
         <!-- Filter Card -->
@@ -128,7 +128,6 @@
             <p class="filter-subtitle">Rekap transaksi bulanan: Pengambilan, Pemasukan, dan Transfer</p>
 
             <form action="{{ route('laporan.rinci') }}" method="GET" class="filter-form">
-                <div class="filter-form">
                     <div class="form-group">
                     <label>Bulan</label>
                     <select name="bulan" id="bulan">
@@ -154,37 +153,7 @@
                     </svg>
                     Tampilkan
                 </button>
-            </div>
-        </div>
-
-        <!-- Export Buttons -->
-        <div class="export-buttons">
-            <button class="btn btn-pdf" onclick="cetakPDF()">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
-                </svg>
-                PDF
-            </button>
-            <button class="btn btn-excel" onclick="exportExcel()">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
-                </svg>
-                Excel
-            </button>
-            <button class="btn btn-sheets" onclick="exportSheets()">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
-                </svg>
-                G-Sheets
-            </button>
-        </div>
-
-        <!-- Summary Card -->
-        <div class="summary-card">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-            </svg>
-            <h3>Summary per Barang</h3>
+            </form>
         </div>
 
         <!-- Controls Bar -->
@@ -207,6 +176,62 @@
             </div>
         </div>
 
+        <!-- TABEL 1: SUMMARY PER BARANG -->
+        <div class="summary-card">
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg>
+            <h3>Summary per Barang</h3>
+        </div>
+        <div class="table-container" style="margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+             <table id="summaryTable" style="width: 100%; min-width: 800px; table-layout: fixed; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                <th style="width: 15%; padding: 12px 10px; text-align: left;">KODE</th>
+                <th style="width: 30%; padding: 12px 10px; text-align: left;">NAMA BARANG</th>
+                <th style="width: 10%; padding: 12px 10px; text-align: left;">SATUAN</th>
+                <th style="width: 10%; padding: 12px 10px; text-align: center;">AWAL</th>
+                <th style="width: 11%; padding: 12px 10px; text-align: center;">MASUK</th>
+                <th style="width: 11%; padding: 12px 10px; text-align: center;">KELUAR</th>
+                <th style="width: 13%; padding: 12px 10px; text-align: center;">AKHIR</th>
+                </thead>
+                <tbody id="summaryTableBody"></tbody>
+            </table>
+            
+            <!-- PAGINATION UNTUK SUMMARY -->
+            <div style="display:flex; align-items:center; justify-content:space-between; padding: 15px; background: #fff; border-top: 1px solid #f1f5f9;">
+                <span id="summaryPageInfo" style="color:#64748b; font-size:13px;"></span>
+                <div id="summaryPageButtons" style="display:flex; gap:5px;"></div>
+            </div>
+        </div>
+
+         <!-- Export Buttons -->
+        <div class="export-buttons">
+            <button class="btn btn-pdf" onclick="cetakPDF()">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
+                </svg>
+                PDF
+            </button>
+            <button class="btn btn-excel" onclick="exportExcel()">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
+                </svg>
+                Excel
+            </button>
+            <button class="btn btn-sheets" onclick="exportSheets()">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
+                </svg>
+                G-Sheets
+            </button>
+        </div>
+
+        <div class="summary-card">
+            <svg fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+            </svg>
+            <h3>Detail Transaksi</h3>
+        </div>
         <!-- Table Section -->
         <div class="table-container">
             <table id="laporanTable">
@@ -220,38 +245,12 @@
                         <th>TGL BUKU</th>
                         <th>HARGA SAT.</th>
                         <th>TOTAL HARGA</th>
+                        <th>TGL DOKUMEN</th> 
                         <th>NO. BUKTI</th>
                         <th>NAMA/SUPPLIER</th>
-                        <th>MASUK</th>
-                        <th>KELUAR</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach($allData as $data)
-                    <tr>
-                        <td>
-                            @if($data['jenis'] == 'PAKAI')
-                                <span class="badge badge-pakai" style="background:#fee2e2; color:#b91c1c;">PAKAI</span>
-                            @elseif($data['jenis'] == 'PEMBELIAN')
-                                <span class="badge" style="background:#dcfce7; color:#15803d;">BELI</span>
-                            @else
-                                <span class="badge" style="background:#fef9c3; color:#a16207;">TRANSFER</span>
-                            @endif
-                        </td>
-                        <td>{{ $data['kode'] }}</td>
-                        <td>{{ $data['nama'] }}</td>
-                        <td>{{ $data['jumlah'] }}</td>
-                        <td>{{ $data['satuan'] }}</td>
-                        <td>{{ \Carbon\Carbon::parse($data['tanggal'])->format('d/m/Y') }}</td>
-                        <td>Rp {{ number_format($data['harga'], 0, ',', '.') }}</td>
-                        <td>Rp {{ number_format($data['harga'] * $data['jumlah'], 0, ',', '.') }}</td>
-                        <td>{{ $data['bukti'] }}</td>
-                        <td>{{ $data['tag_id'] }}</td>
-                        <td style="color: green; font-weight: bold;">{{ $data['masuk'] > 0 ? '+'.$data['masuk'] : '-' }}</td>
-                        <td style="color: red; font-weight: bold;">{{ $data['keluar'] > 0 ? '-'.$data['keluar'] : '-' }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
+                <tbody id="detailTableBody"></tbody> 
             </table>
         </div>
     </div>
@@ -273,277 +272,587 @@
         </div>
     </div>
 
-    <script>
-        // Data laporan (contoh)
-        let laporanData = [
-            {id: 1, jenis: 'PAKAI', kode: '10103010100030', nama: 'Ballpoint Snowman v5', jumlah: 1, satuan: 'Buah', tglBuku: '12/02/2026', hargaSat: 0, totalHarga: 0, tglDokumen: '12/02/2026', noBukti: '3374-9', tagId: 'Nita Amaliyah, A.P.Kb.N.', pemasukan: 0, pengambilan: 1, saldoAkhir: 23},
-            {id: 2, jenis: 'PAKAI', kode: '10103010030021', nama: 'Binder Klip no. 107', jumlah: 1, satuan: 'Dus', tglBuku: '10/02/2026', hargaSat: 0, totalHarga: 0, tglDokumen: '10/02/2026', noBukti: '3374-7', tagId: 'Astuti Dewi Adiningtyas, SST', pemasukan: 0, pengambilan: 1, saldoAkhir: 55},
-            {id: 3, jenis: 'PAKAI', kode: '10103010030022', nama: 'Binder Klip no.260', jumlah: 1, satuan: 'Dus', tglBuku: '10/02/2026', hargaSat: 0, totalHarga: 0, tglDokumen: '10/02/2026', noBukti: '3374-7', tagId: 'Astuti Dewi Adiningtyas, SST', pemasukan: 0, pengambilan: 1, saldoAkhir: 2},
-            {id: 4, jenis: 'PAKAI', kode: '10103010030028', nama: 'Binder Klip No. 155', jumlah: 1, satuan: 'Dus', tglBuku: '10/02/2026', hargaSat: 0, totalHarga: 0, tglDokumen: '10/02/2026', noBukti: '3374-7', tagId: 'Astuti Dewi Adiningtyas, SST', pemasukan: 0, pengambilan: 1, saldoAkhir: 32},
-            {id: 5, jenis: 'PAKAI', kode: '10103010060032', nama: 'Stofmap Cetakan BPS Kota Semarang', jumlah: 7, satuan: 'Buah', tglBuku: '02/02/2026', hargaSat: 0, totalHarga: 0, tglDokumen: '02/02/2026', noBukti: '3374-1', tagId: 'Hartanto Agoestijono, SH', pemasukan: 0, pengambilan: 7, saldoAkhir: 285},
-            {id: 6, jenis: 'PAKAI', kode: '10103010060032', nama: 'Stofmap Cetakan BPS Kota Semarang', jumlah: 3, satuan: 'Buah', tglBuku: '03/02/2026', hargaSat: 0, totalHarga: 0, tglDokumen: '03/02/2026', noBukti: '3374-2', tagId: 'Hartanto Agoestijono, SH', pemasukan: 0, pengambilan: 3, saldoAkhir: 282},
-            {id: 7, jenis: 'PAKAI', kode: '10103010060032', nama: 'Stofmap Cetakan BPS Kota Semarang', jumlah: 4, satuan: 'Buah', tglBuku: '04/02/2026', hargaSat: 0, totalHarga: 0, tglDokumen: '04/02/2026', noBukti: '3374-3', tagId: 'Metriana Jovanika, SST', pemasukan: 0, pengambilan: 4, saldoAkhir: 278},
-            {id: 8, jenis: 'PAKAI', kode: '10103010060032', nama: 'Stofmap Cetakan BPS Kota Semarang', jumlah: 5, satuan: 'Buah', tglBuku: '05/02/2026', hargaSat: 0, totalHarga: 0, tglDokumen: '05/02/2026', noBukti: '3374-4', tagId: 'Hartanto Agoestijono, SH', pemasukan: 0, pengambilan: 5, saldoAkhir: 273},
-            {id: 9, jenis: 'PAKAI', kode: '10103010060032', nama: 'Stofmap Cetakan BPS Kota Semarang', jumlah: 4, satuan: 'Buah', tglBuku: '06/02/2026', hargaSat: 0, totalHarga: 0, tglDokumen: '06/02/2026', noBukti: '3374-5', tagId: 'Hartanto Agoestijono, SH', pemasukan: 0, pengambilan: 4, saldoAkhir: 269},
-            {id: 10, jenis: 'PAKAI', kode: '10103010060032', nama: 'Stofmap Cetakan BPS Kota Semarang', jumlah: 5, satuan: 'Buah', tglBuku: '09/02/2026', hargaSat: 0, totalHarga: 0, tglDokumen: '09/02/2026', noBukti: '3374-6', tagId: 'Nita Amaliyah, A.P.Kb.N.', pemasukan: 0, pengambilan: 5, saldoAkhir: 264}
-        ];
+<script>
+    const bulanNamaList = {
+    '01': 'Januari', '02': 'Februari', '03': 'Maret', '04': 'April',
+    '05': 'Mei', '06': 'Juni', '07': 'Juli', '08': 'Agustus',
+    '09': 'September', '10': 'Oktober', '11': 'November', '12': 'Desember'
+    };
 
-        let originalData = [...laporanData];
+    const GOOGLE_CLIENT_ID = '725972495548-3ndslhvjpk94r4k29cir5fbvha41fm07.apps.googleusercontent.com';
+    const GOOGLE_SCOPE = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file';
+    let googleAccessToken = null;
 
-        // Render table
-        function renderTable(data = laporanData) {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+    function loadGoogleAPI() {
+        return new Promise((resolve) => {
+            if (window.google) { resolve(); return; }
+            const script = document.createElement('script');
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.onload = resolve;
+            document.head.appendChild(script);
+        });
+    }
 
-            data.forEach((item) => {
-                const row = `
+    async function exportSheets() {
+        await loadGoogleAPI();
+        const client = google.accounts.oauth2.initTokenClient({
+            client_id: GOOGLE_CLIENT_ID,
+            scope: GOOGLE_SCOPE,
+            callback: async (response) => {
+                if (response.error) { alert('Login Google gagal: ' + response.error); return; }
+                googleAccessToken = response.access_token;
+                await createAndFillSheet();
+            }
+        });
+        client.requestAccessToken();
+    }
+
+    async function createAndFillSheet() {
+        const bulanVal = document.getElementById('bulan').value;
+        const bulanNama = bulanNamaList[bulanVal] || bulanVal;
+        const tahun = document.getElementById('tahun').value;
+        const judulSheet = `Laporan Persediaan ${bulanNama} ${tahun}`;
+        const now = new Date();
+        const tglCetak = `${String(now.getDate()).padStart(2,'0')} ${bulanNamaList[String(now.getMonth()+1).padStart(2,'0')]} ${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+        try {
+            // 1. Buat spreadsheet baru
+            const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + googleAccessToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    properties: { title: judulSheet },
+                    sheets: [{ properties: { title: 'Laporan' } }]
+                })
+            });
+            const sheet = await createRes.json();
+            const spreadsheetId = sheet.spreadsheetId;
+            const spreadsheetUrl = sheet.spreadsheetUrl;
+            const sheetId = sheet.sheets[0].properties.sheetId; 
+
+            // 2. Siapkan data
+            const allRows = [
+                ['', '', '', '', 'BADAN PUSAT STATISTIK KOTA SEMARANG', '', '', '', '', '', ''],
+                ['', '', '', '', 'Laporan Rekap Persediaan Barang', '', '', '', '', '', ''],
+                ['', '', '', '', `Periode: ${bulanNama.toUpperCase()} ${tahun}`, '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', '', '', '', ''],
+                ['REKAP LAPORAN BULANAN', '', '', '', '', '', '', '', '', '', ''],
+                ['Jenis', 'Kode', 'Nama Barang', 'Jumlah', 'Satuan', 'Tgl Buku', 'Harga Sat', 'Total Harga', 'Tgl Dokumen', 'No Bukti', 'Tag ID'],
+                ...currentData.map(item => [
+                    item.jenis === 'PEMBELIAN' ? 'BELI' : item.jenis,
+                    item.kode || '', item.nama || '', item.jumlah || 0,
+                    item.satuan || '', item.tgl_buku || '', item.harga_sat || 0,
+                    item.total_harga || 0, item.tanggal_dokumen || '',
+                    item.no_bukti || '', item.tag_id || ''
+                ]),
+                ['', '', '', '', '', '', '', '', '', '', ''],
+                [`Dicetak pada: ${tglCetak}`, '', '', '', '', '', '', '', '', '', ''],
+            ];
+
+            // 3. Isi data ke sheet
+            await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Laporan!A1:K${allRows.length}?valueInputOption=RAW`, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + googleAccessToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ values: allRows })
+            });
+
+            // 4. Format cells
+            const formatRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + googleAccessToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requests: [
+                    // Merge header instansi
+                    { mergeCells: { range: { sheetId: sheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 4, endColumnIndex: 11 }, mergeType: 'MERGE_ALL' }},
+                    { mergeCells: { range: { sheetId: sheetId, startRowIndex: 1, endRowIndex: 2, startColumnIndex: 4, endColumnIndex: 11 }, mergeType: 'MERGE_ALL' }},
+                    { mergeCells: { range: { sheetId: sheetId, startRowIndex: 2, endRowIndex: 3, startColumnIndex: 4, endColumnIndex: 11 }, mergeType: 'MERGE_ALL' }},
+                    
+                    // Merge section label (row 5, index 4)
+                    { mergeCells: { range: { sheetId: sheetId, startRowIndex: 4, endRowIndex: 5, startColumnIndex: 0, endColumnIndex: 11 }, mergeType: 'MERGE_ALL' }},
+
+                    // Style header instansi (bold + center)
+                    { repeatCell: {
+                        range: { sheetId: sheetId, startRowIndex: 0, endRowIndex: 3, startColumnIndex: 4, endColumnIndex: 11 },
+                        cell: { userEnteredFormat: { textFormat: { bold: true }, horizontalAlignment: 'CENTER' }},
+                        fields: 'userEnteredFormat(textFormat,horizontalAlignment)'
+                    }},
+
+                    // Style section label: background hijau muda
+                    { repeatCell: {
+                        range: { sheetId: sheetId, startRowIndex: 4, endRowIndex: 5, startColumnIndex: 0, endColumnIndex: 11 },
+                        cell: { userEnteredFormat: {
+                            backgroundColor: { red: 220/255, green: 252/255, blue: 231/255 },
+                            textFormat: { bold: true, foregroundColor: { red: 21/255, green: 128/255, blue: 61/255 }}
+                        }},
+                        fields: 'userEnteredFormat(backgroundColor,textFormat)'
+                    }},
+
+                    // Style header tabel (row 6, index 5): background hijau tua + teks putih
+                    { repeatCell: {
+                        range: { sheetId: sheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 0, endColumnIndex: 11 },
+                        cell: { userEnteredFormat: {
+                            backgroundColor: { red: 22/255, green: 163/255, blue: 74/255 },
+                            textFormat: { bold: true, foregroundColor: { red: 1, green: 1, blue: 1 }},
+                            horizontalAlignment: 'CENTER'
+                        }},
+                        fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
+                    }},
+
+                    // Auto resize kolom
+                    { autoResizeDimensions: { dimensions: { sheetId: sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: 11 }}}
+                ]})
+                            });
+
+            const formatJson = await formatRes.json();
+            console.log('Format response:', JSON.stringify(formatJson));
+
+            alert('✅ Google Sheets berhasil dibuat!');
+            window.location.href = spreadsheetUrl;
+
+        } catch (err) {
+            alert('Gagal membuat Google Sheet: ' + err.message);
+        }
+    }
+    const rawData = @json($allData);
+    const saldoAwalMap = @json($saldoAwalPerBarang); 
+    let originalData = Array.isArray(rawData) ? rawData : Object.values(rawData);
+
+    // Helper: Parsing Tanggal
+    function parseDate(str) {
+        if (!str) return 0;
+        const parts = str.split('/');
+        return parts.length === 3 ? new Date(parts[2], parts[1] - 1, parts[0]).getTime() : 0;
+    }
+
+    // Default Sort Detail: Terbaru ke Terlama
+    originalData.sort((a, b) => parseDate(b.tanggal_dokumen) - parseDate(a.tanggal_dokumen));
+    
+    let currentData = [...originalData];
+    let summaryArray = []; // Akan diisi hasil grouping
+
+    // Pagination Settings untuk Summary
+    let currentPageSummary = 1;
+    const rowsPerPageSummary = 10;
+
+    function formatRupiah(angka) {
+        return "Rp " + Number(angka || 0).toLocaleString('id-ID');
+    }
+
+    // 2. FUNGSI UTAMA RENDER
+    function renderTable() {
+        // --- PROSES GROUPING UNTUK SUMMARY ---
+        const summaryMap = {};
+
+        // Masukkan saldo awal
+        Object.entries(saldoAwalMap).forEach(([kode, data]) => {
+            summaryMap[kode] = {
+                kode: kode, nama: data.nama, satuan: data.satuan,
+                initial: parseInt(data.saldo) || 0, in: 0, out: 0
+            };
+        });
+
+        // Tambah transaksi bulan ini ke summary
+        currentData.forEach(item => {
+            if (!summaryMap[item.kode]) {
+                summaryMap[item.kode] = {
+                    kode: item.kode, nama: item.nama, satuan: item.satuan,
+                    initial: 0, in: 0, out: 0
+                };
+            }
+            const jml = parseInt(item.jumlah || 0);
+            if (item.jenis === 'PEMBELIAN' || item.jenis === 'BELI' || item.jenis === 'TRANSFER') {
+                summaryMap[item.kode].in += jml;
+            } else if (item.jenis === 'PAKAI') {
+                summaryMap[item.kode].out += jml;
+            }
+        });
+
+        // Convert ke Array & Urutkan A-Z Nama
+        summaryArray = Object.values(summaryMap);
+        summaryArray.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
+
+        // Render Page pertama Summary
+        currentPageSummary = 1;
+        renderSummaryPage();
+
+        // --- RENDER DETAIL (SEMUA DATA TERFILTER) ---
+        const detailBody = document.getElementById('detailTableBody');
+        if (detailBody) {
+            detailBody.innerHTML = '';
+            currentData.forEach(item => {
+                let badgeStyle = item.jenis === 'PAKAI' ? 'background:#fee2e2; color:#b91c1c;' : 'background:#dcfce7; color:#15803d;';
+                let badgeLabel = (item.jenis === 'PEMBELIAN' || item.jenis === 'BELI') ? 'BELI' : item.jenis;
+
+                detailBody.innerHTML += `
                     <tr>
-                        <td><span class="badge badge-pakai">${item.jenis}</span></td>
-                        <td>${item.kode}</td>
-                        <td>${item.nama}</td>
-                        <td>${item.jumlah}</td>
-                        <td>${item.satuan}</td>
-                        <td>${item.tglBuku}</td>
-                        <td>${item.hargaSat.toFixed(2)}</td>
-                        <td>${item.totalHarga.toFixed(2)}</td>
-                        <td>${item.tglDokumen}</td>
-                        <td>${item.noBukti}</td>
-                        <td>${item.tagId}</td>
-                        <td>
-                            <button class="icon-btn green">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
-                            </button>
-                        </td>
-                        <td>
-                            <button class="icon-btn red">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
-                            </button>
-                        </td>
-                        <td>${item.saldoAkhir}</td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
+                        <td><span class="badge" style="${badgeStyle}">${badgeLabel}</span></td>
+                        <td style="font-weight:bold;">${item.kode || ''}</td>
+                        <td>${item.nama || ''}</td>
+                        <td style="text-align:center;">${item.jumlah || 0}</td>
+                        <td>${item.satuan || ''}</td>
+                        <td>${item.tgl_buku || ''}</td>
+                        <td>${formatRupiah(item.harga_sat)}</td>
+                        <td>${formatRupiah(item.total_harga)}</td>
+                        <td>${item.tanggal_dokumen || ''}</td>
+                        <td>${item.no_bukti || ''}</td>
+                        <td>${item.tag_id || ''}</td>
+                    </tr>`;
             });
         }
+    }
 
-        // Search table
-        function searchTable() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = originalData.filter(item => 
-                item.nama.toLowerCase().includes(searchTerm) ||
-                item.kode.toLowerCase().includes(searchTerm) ||
-                item.tagId.toLowerCase().includes(searchTerm)
-            );
-            renderTable(filtered);
-        }
+    // 3. RENDER HALAMAN SPESIFIK SUMMARY
+    function renderSummaryPage() {
+        const summaryBody = document.getElementById('summaryTableBody');
+        if (!summaryBody) return;
 
-        // Sort table
-        function sortTable() {
-            const sortType = document.getElementById('sortSelect').value;
-            let sorted = [...laporanData];
+        summaryBody.innerHTML = '';
+        const start = (currentPageSummary - 1) * rowsPerPageSummary;
+        const end = start + rowsPerPageSummary;
+        const pageItems = summaryArray.slice(start, end);
 
-            switch(sortType) {
-                case 'nama-asc':
-                    sorted.sort((a, b) => a.nama.localeCompare(b.nama));
-                    break;
-                case 'nama-desc':
-                    sorted.sort((a, b) => b.nama.localeCompare(a.nama));
-                    break;
-                case 'tanggal-newest':
-                    sorted.sort((a, b) => {
-                        const dateA = a.tglDokumen.split('/').reverse().join('-');
-                        const dateB = b.tglDokumen.split('/').reverse().join('-');
-                        return dateB.localeCompare(dateA);
-                    });
-                    break;
-                case 'tanggal-oldest':
-                    sorted.sort((a, b) => {
-                        const dateA = a.tglDokumen.split('/').reverse().join('-');
-                        const dateB = b.tglDokumen.split('/').reverse().join('-');
-                        return dateA.localeCompare(dateB);
-                    });
-                    break;
-                default:
-                    sorted = [...originalData];
-            }
-
-            laporanData = sorted;
-            renderTable();
-        }
-
-        // Tampilkan laporan
-        function tampilkanLaporan() {
-            const bulan = document.getElementById('bulan').value;
-            const tahun = document.getElementById('tahun').value;
-            
-            const bulanNama = ['', 'JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 
-                             'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
-            
-            document.querySelector('.page-header h1').textContent = 
-                `Laporan Rekap Persediaan Barang - ${bulanNama[parseInt(bulan)]} ${tahun}`;
-            
-            renderTable();
-        }
-
-        // Cetak PDF
-        function cetakPDF() {
-            const bulan = document.getElementById('bulan').value;
-            const tahun = document.getElementById('tahun').value;
-            
-            const bulanNama = ['', 'JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 
-                             'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
-
-            const pdfWindow = window.open('', '_blank');
-            pdfWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Laporan Rinci Bulanan</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; }
-                        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px; }
-                        .header img { width: 80px; }
-                        .header-text { text-align: center; flex: 1; }
-                        .header-text h1 { font-size: 18px; margin: 5px 0; }
-                        .header-text h2 { font-size: 14px; margin: 5px 0; font-weight: normal; }
-                        .title { text-align: center; margin: 20px 0; }
-                        .title h3 { font-size: 16px; font-weight: bold; text-decoration: underline; margin: 5px 0; }
-                        .title p { font-size: 14px; margin: 5px 0; }
-                        .rekap-header { background: #e8f5e9; padding: 10px; font-weight: bold; margin: 20px 0 10px 0; }
-                        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-                        th, td { border: 1px solid #000; padding: 6px; text-align: left; }
-                        th { background: #f0f0f0; font-weight: bold; }
-                        .badge { background: #ffcdd2; color: #c62828; padding: 3px 8px; border-radius: 3px; font-size: 10px; font-weight: bold; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <img src="{{ asset('assets/images/logoBPS.png') }}" alt="Logo BPS" onerror="this.style.display='none'">
-                        <div class="header-text">
-                            <h1>BPS KOTA SEMARANG</h1>
-                            <h2>Laporan Rekap Persediaan Barang</h2>
-                            <h2>Tahun ${tahun}</h2>
-                        </div>
-                    </div>
-
-                    <div class="title">
-                        <h3>LAPORAN REKAP PERSEDIAAN BARANG</h3>
-                        <p>Periode: ${bulanNama[parseInt(bulan)]} ${tahun}</p>
-                    </div>
-
-                    <div class="rekap-header">REKAP LAPORAN BULANAN</div>
-
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Jenis</th>
-                                <th>Kode</th>
-                                <th>Nama Barang</th>
-                                <th>Jumlah</th>
-                                <th>Satuan</th>
-                                <th>Tgl Buku</th>
-                                <th>Harga Sat.</th>
-                                <th>Total Harga</th>
-                                <th>Tgl Dokumen</th>
-                                <th>No. Bukti</th>
-                                <th>Tag ID</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${laporanData.map(item => `
-                                <tr>
-                                    <td><span class="badge">${item.jenis}</span></td>
-                                    <td>${item.kode}</td>
-                                    <td>${item.nama}</td>
-                                    <td>${item.jumlah}</td>
-                                    <td>${item.satuan}</td>
-                                    <td>${item.tglBuku}</td>
-                                    <td>${item.hargaSat.toFixed(2)}</td>
-                                    <td>${item.totalHarga.toFixed(2)}</td>
-                                    <td>${item.tglDokumen}</td>
-                                    <td>${item.noBukti}</td>
-                                    <td>${item.tagId}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </body>
-                </html>
-            `);
-            pdfWindow.document.close();
-            pdfWindow.print();
-        }
-
-        // Export Excel
-        function exportExcel() {
-            const bulan = document.getElementById('bulan').value;
-            const tahun = document.getElementById('tahun').value;
-            const bulanNama = ['', 'FEBRUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 
-                             'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
-
-            const wb = XLSX.utils.book_new();
-            
-            const wsData = [
-                ['LAPORAN BULANAN RINCI'],
-                [],
-                [`Periode: ${bulanNama[parseInt(bulan)]} ${tahun}`],
-                [],
-                [],
-                ['Jenis', 'Kode', 'Nama Barang', 'Jumlah', 'Satuan', 'Tgl Buku', 'Harga Satuan', 'Total Harga', 'Tgl Dokumen', 'No. Bukti', 'Tag ID'],
-                ...laporanData.map(item => [
-                    item.jenis,
-                    item.kode,
-                    item.nama,
-                    item.jumlah,
-                    item.satuan,
-                    item.tglBuku,
-                    item.hargaSat,
-                    item.totalHarga,
-                    item.tglDokumen,
-                    item.noBukti,
-                    item.tagId
-                ])
-            ];
-            
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            
-            ws['!cols'] = [
-                {wch: 10}, {wch: 18}, {wch: 35}, {wch: 8}, {wch: 10},
-                {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 30}
-            ];
-            
-            XLSX.utils.book_append_sheet(wb, ws, `Laporan_${bulanNama[parseInt(bulan)]}_${tahun}`);
-            XLSX.writeFile(wb, `Laporan_Bulanan_${bulan}_${tahun}.xlsx`);
-        }
-
-        // Logout Modal
-        function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-        }
-
-        function closeLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-        }
-
-        function confirmLogout() {
-            window.location.href = '/';
-        }
-
-        window.onclick = function(event) {
-            const modal = document.getElementById('logoutModal');
-            if (event.target === modal) {
-                closeLogoutModal();
-            }
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            renderTable();
+        pageItems.forEach(s => {
+            const saldoAkhir = s.initial + s.in - s.out;
+            summaryBody.innerHTML += `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="font-weight:bold; font-size:12px;">${s.kode}</td>
+                    <td style="font-size:13px; color:#334155; overflow-wrap: break-word;">${s.nama}</td>
+                    <td style="font-size:13px;">${s.satuan}</td>
+                    <td style="text-align:center;">${s.initial}</td>
+                    <td style="text-align:center;"><span class="badge" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:10px;">${s.in}</span></td>
+                    <td style="text-align:center;"><span class="badge" style="background:#fee2e2; color:#b91c1c; padding:2px 8px; border-radius:10px;">${s.out}</span></td>
+                    <td style="text-align:center; font-weight:bold; background:#f8fafc; color:${saldoAkhir < 0 ? '#b91c1c' : '#1e293b'}">${saldoAkhir}</td>
+                </tr>`;
         });
-    </script>
+
+        updateSummaryPaginationControls();
+    }
+
+    // 4. PAGINATION PINTAR (MAKS 5 TOMBOL)
+    function updateSummaryPaginationControls() {
+        const container = document.getElementById('summaryPageButtons');
+        const info = document.getElementById('summaryPageInfo');
+        if (!container) return;
+
+        const totalPages = Math.ceil(summaryArray.length / rowsPerPageSummary);
+        const from = summaryArray.length > 0 ? (currentPageSummary - 1) * rowsPerPageSummary + 1 : 0;
+        const to = Math.min(currentPageSummary * rowsPerPageSummary, summaryArray.length);
+        info.textContent = `Menampilkan ${from} - ${to} dari ${summaryArray.length} barang`;
+
+        container.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        let startPage = Math.max(1, currentPageSummary - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+        if (startPage > 1) {
+            addPageBtn(1, false, container);
+            if (startPage > 2) {
+                const dots = document.createElement('span');
+                dots.textContent = '...';
+                dots.style.padding = '5px';
+                container.appendChild(dots);
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            addPageBtn(i, i === currentPageSummary, container);
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const dots = document.createElement('span');
+                dots.textContent = '...';
+                dots.style.padding = '5px';
+                container.appendChild(dots);
+            }
+            addPageBtn(totalPages, false, container);
+        }
+    }
+
+    function addPageBtn(page, isActive, container) {
+        const btn = document.createElement('button');
+        btn.innerText = page;
+        btn.style.cssText = `padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-weight: bold; background: ${isActive ? '#4a5fc1' : 'white'}; color: ${isActive ? 'white' : '#4a5fc1'};`;
+        btn.onclick = () => {
+            currentPageSummary = page;
+            renderSummaryPage();
+            window.scrollTo({ top: 300, behavior: 'smooth' }); // Scroll ke tabel summary
+        };
+        container.appendChild(btn);
+    }
+
+    // 5. SEARCH & SORT
+    function searchTable() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        currentData = originalData.filter(item =>
+            (item.nama && item.nama.toLowerCase().includes(term)) ||
+            (item.kode && item.kode.toLowerCase().includes(term)) ||
+            (item.tag_id && item.tag_id.toLowerCase().includes(term))
+        );
+        renderTable(); // Recalculate summary & detail
+    }
+
+    function sortTable() {
+        const sortType = document.getElementById('sortSelect').value;
+        if (sortType === 'nama-asc') currentData.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+        else if (sortType === 'nama-desc') currentData.sort((a, b) => (b.nama || '').localeCompare(a.nama || ''));
+        else if (sortType === 'tanggal-newest') currentData.sort((a, b) => parseDate(b.tanggal_dokumen) - parseDate(a.tanggal_dokumen));
+        else if (sortType === 'tanggal-oldest') currentData.sort((a, b) => parseDate(a.tanggal_dokumen) - parseDate(b.tanggal_dokumen));
+        renderTable();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => renderTable());
+
+    function confirmLogout() { window.location.href = "{{ route('logout') }}"; }
+    function showLogoutModal() { document.getElementById('logoutModal').style.display = 'flex'; }
+    function closeLogoutModal() { document.getElementById('logoutModal').style.display = 'none'; }
+
+    function cetakPDF() {
+        const bulanVal = document.getElementById('bulan').value;
+        const tahun = document.getElementById('tahun').value;
+        const bulanNama = bulanNamaList[bulanVal] || bulanVal;
+        const now = new Date();
+        const tglCetak = `${String(now.getDate()).padStart(2,'0')} ${bulanNamaList[String(now.getMonth()+1).padStart(2,'0')]} ${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+        let rowsHtml = currentData.map(item => `
+            <tr>
+                <td><span class="badge-jenis ${item.jenis === 'PAKAI' ? 'pakai' : item.jenis === 'PEMBELIAN' ? 'beli' : 'transfer'}">${item.jenis === 'PEMBELIAN' ? 'BELI' : item.jenis}</span></td>
+                <td>${item.kode || ''}</td>
+                <td>${item.nama || ''}</td>
+                <td style="text-align:center">${item.jumlah || 0}</td>
+                <td style="text-align:center">${item.satuan || ''}</td>
+                <td style="text-align:center">${item.tgl_buku || ''}</td>
+                <td style="text-align:right">${item.harga_sat || 0}</td>
+                <td style="text-align:right">${item.total_harga || 0}</td>
+                <td style="text-align:center">${item.tanggal_dokumen || ''}</td>
+                <td>${item.no_bukti || ''}</td>
+                <td>${item.tag_id || ''}</td>
+            </tr>`).join('');
+
+        const pdfWindow = window.open('', '_blank');
+        pdfWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Laporan Rekap Persediaan Barang</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: Arial, sans-serif; font-size: 11px; color: #222; padding: 30px; }
+
+                    /* Header */
+                    .header { display: flex; align-items: center; justify-content: center; gap: 20px; padding-bottom: 16px; border-bottom: 2px solid #333; margin-bottom: 24px; }
+                    .header img { width: 70px; height: 70px; object-fit: contain; }
+                    .header-text { text-align: center; }
+                    .header-text h1 { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+                    .header-text p { font-size: 12px; color: #444; margin-top: 2px; }
+
+                    /* Judul */
+                    .title-section { text-align: center; margin-bottom: 20px; }
+                    .title-section h2 { font-size: 15px; font-weight: bold; text-decoration: underline; text-underline-offset: 3px; text-transform: uppercase; letter-spacing: 1px; }
+                    .title-section p { font-size: 12px; margin-top: 4px; color: #555; }
+
+                    /* Section label */
+                    .section-label { background: #dcfce7; color: #15803d; border-left: 3px solid #16a34a; font-weight: bold; font-size: 12px; padding: 8px 14px; margin-bottom: 5px; display: block; width: 100%; }
+
+                    /* Tabel */
+                    table { width: 100%; border-collapse: collapse; font-size: 9px; }
+                    thead tr { background: #16a34a; color: white; }
+                    thead th { padding: 8px 6px; text-align: center; font-weight: bold; border: 1px solid #15803d; }
+                    tbody tr:nth-child(even) { background: #f9fafb; }
+                    tbody tr:nth-child(odd) { background: #ffffff; }
+                    tbody td { padding: 7px 6px; border: 1px solid #e5e7eb; vertical-align: middle; word-wrap: break-word; }
+
+                    /* Badge */
+                    .badge-jenis { padding: 3px 10px; border-radius: 4px; font-size: 9px; font-weight: bold; display: inline-block; }
+                    .badge-jenis.pakai { background: #fee2e2; color: #b91c1c; }
+                    .badge-jenis.beli { background: #dcfce7; color: #15803d; }
+                    .badge-jenis.transfer { background: #fef9c3; color: #a16207; }
+
+                    /* Footer */
+                    .footer { text-align: center; margin-top: 24px; font-size: 10px; color: #888; }
+
+                    @media print {
+                        body { padding: 15px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        table { table-layout: fixed; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <img src="/assets/images/logoBPS.png" alt="Logo BPS" onerror="this.style.display='none'">
+                    <div class="header-text">
+                        <h1>BPS KOTA SEMARANG</h1>
+                        <p>Laporan Rekap Persediaan Barang</p>
+                        <p>Tahun ${tahun}</p>
+                    </div>
+                </div>
+
+                <div class="title-section">
+                    <h2>Laporan Rekap Persediaan Barang</h2>
+                    <p>Periode: ${bulanNama.toUpperCase()} ${tahun}</p>
+                </div>
+
+                <div class="section-label">REKAP LAPORAN BULANAN</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Jenis</th>
+                            <th>Kode</th>
+                            <th>Nama Barang</th>
+                            <th>Jumlah</th>
+                            <th>Satuan</th>
+                            <th>Tgl Buku</th>
+                            <th>Harga Sat.</th>
+                            <th>Total Harga</th>
+                            <th>Tgl Dokumen</th>
+                            <th>No. Bukti</th>
+                            <th>Tag ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+
+                <div class="footer">Dicetak pada: ${tglCetak}</div>
+            </body>
+            </html>
+        `);
+        pdfWindow.document.close();
+        setTimeout(() => pdfWindow.print(), 500);
+    }
+    // 8. FIX EXCEL
+    async function exportExcel() {
+        const bulanVal = document.getElementById('bulan').value;
+        const bulanNama = bulanNamaList[bulanVal] || bulanVal;
+        const tahun = document.getElementById('tahun').value;
+        const now = new Date();
+        const tglCetak = `${String(now.getDate()).padStart(2,'0')} ${bulanNamaList[String(now.getMonth()+1).padStart(2,'0')]} ${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Laporan Persediaan');
+
+        // ── Lebar kolom ──────────────────────────────────────────────────────
+        worksheet.columns = [
+            { key: 'jenis',        width: 12 },
+            { key: 'kode',         width: 22 },
+            { key: 'nama',         width: 45 },
+            { key: 'jumlah',       width: 10 },
+            { key: 'satuan',       width: 12 },
+            { key: 'tgl_buku',     width: 15 },
+            { key: 'harga_sat',    width: 18 },
+            { key: 'total_harga',  width: 18 },
+            { key: 'tgl_dok',      width: 15 },
+            { key: 'no_bukti',     width: 20 },
+            { key: 'tag_id',       width: 35 }
+        ];
+
+        const totalCols = worksheet.columns.length; // 11
+        const lastCol   = String.fromCharCode(64 + totalCols); // 'K'
+
+        // ── ROW 1-4: Area header (logo + judul di tengah bersama) ─────────────
+        // Semua kolom di-merge penuh A-K, logo float di tengah-kiri judul
+        worksheet.addRow([]); // row 1
+        worksheet.addRow([]); // row 2
+        worksheet.addRow([]); // row 3
+        worksheet.addRow([]); // row 4 kosong
+
+        // Set tinggi row 1-3 agar logo + teks muat
+        // Merge seluruh kolom A-K untuk tiap row judul
+        worksheet.mergeCells(`A1:${lastCol}1`);
+        worksheet.mergeCells(`A2:${lastCol}2`);
+        worksheet.mergeCells(`A3:${lastCol}3`);
+
+        // Row 1: Nama instansi
+        const cellR1 = worksheet.getCell('A1');
+        cellR1.value     = '   BADAN PUSAT STATISTIK KOTA SEMARANG';
+        cellR1.font      = { bold: true, size: 14 };
+        cellR1.alignment = { horizontal: 'center', vertical: 'middle' };
+
+        // Row 2: Sub judul
+        const cellR2 = worksheet.getCell('A2');
+        cellR2.value     = '   Laporan Rekap Persediaan Barang';
+        cellR2.font      = { bold: true, size: 12 };
+        cellR2.alignment = { horizontal: 'center', vertical: 'middle' };
+
+        // Row 3: Periode
+        const cellR3 = worksheet.getCell('A3');
+        cellR3.value     = `Periode: ${bulanNama.toUpperCase()} ${tahun}`;
+        cellR3.font      = { size: 11 };
+        cellR3.alignment = { horizontal: 'center', vertical: 'middle' };
+
+        // ── Logo di kolom A, row 1-3 (sebelah kiri judul) ────────────────────
+        try {
+            const response = await fetch('/assets/images/logoBPS.png');
+            const imageBlob = await response.arrayBuffer();
+            const imageId = workbook.addImage({
+                buffer: imageBlob,
+                extension: 'png',
+            });
+            // Hitung posisi logo agar ada di tengah, sebelah kiri teks judul
+            // Kolom tengah = kolom ke-5 dari 11 kolom (sekitar col index 4)
+            worksheet.addImage(imageId, {
+                tl: { col: 3.0, row: 0.1 },
+                ext: { width: 65, height: 65 }
+            });
+        } catch (e) {
+            console.error('Gagal memuat logo:', e);
+        }
+
+        // ── Row 5: Section label ──────────────────────────────────────────────
+        const sectionRow = worksheet.addRow(['REKAP LAPORAN BULANAN']);
+        worksheet.mergeCells(`A${sectionRow.number}:${lastCol}${sectionRow.number}`);
+        sectionRow.getCell(1).fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'DCFCE7' } };
+        sectionRow.getCell(1).font  = { color: { argb: '15803D' }, bold: true };
+        sectionRow.getCell(1).border = { left: { style: 'medium', color: { argb: '16A34A' } } };
+
+        // ── Row 6: Header tabel ───────────────────────────────────────────────
+        const headerRow = worksheet.addRow(['Jenis', 'Kode', 'Nama Barang', 'Jumlah', 'Satuan',
+            'Tgl Buku', 'Harga Sat.', 'Total Harga', 'Tgl Dokumen', 'No. Bukti', 'Tag ID']);
+        headerRow.eachCell((cell) => {
+            cell.fill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: '16A34A' } };
+            cell.font      = { color: { argb: 'FFFFFF' }, bold: true };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            cell.border    = { top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'} };
+        });
+
+        // ── Data ──────────────────────────────────────────────────────────────
+        currentData.forEach(item => {
+            const row = worksheet.addRow([
+                item.jenis === 'PEMBELIAN' ? 'BELI' : item.jenis,
+                item.kode,
+                item.nama,
+                item.jumlah,
+                item.satuan,
+                item.tgl_buku,
+                item.harga_sat,
+                item.total_harga,
+                item.tanggal_dokumen,
+                item.no_bukti,
+                item.tag_id
+            ]);
+
+            const jenisCell = row.getCell(1);
+            if (item.jenis === 'PAKAI')          jenisCell.font = { color: { argb: 'B91C1C' }, bold: true };
+            else if (item.jenis === 'PEMBELIAN') jenisCell.font = { color: { argb: '15803D' }, bold: true };
+            else                                 jenisCell.font = { color: { argb: 'A16207' }, bold: true };
+
+            row.eachCell({ includeEmpty: true }, (cell) => {
+                cell.border    = { top:{style:'thin',color:{argb:'E5E7EB'}}, left:{style:'thin',color:{argb:'E5E7EB'}}, bottom:{style:'thin',color:{argb:'E5E7EB'}}, right:{style:'thin',color:{argb:'E5E7EB'}} };
+                cell.alignment = { vertical: 'middle' };
+            });
+        });
+
+        // ── Footer ────────────────────────────────────────────────────────────
+        worksheet.addRow([]);
+        const footerRow = worksheet.addRow([`Dicetak pada: ${tglCetak}`]);
+        worksheet.mergeCells(`A${footerRow.number}:${lastCol}${footerRow.number}`);
+        footerRow.getCell(1).alignment = { horizontal: 'center' };
+        footerRow.getCell(1).font      = { italic: true, color: { argb: '888888' }, size: 10 };
+
+        // ── Download ──────────────────────────────────────────────────────────
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), `Laporan_Persediaan_${bulanNama}_${tahun}.xlsx`);
+    }
+</script>
 </body>
 </html>

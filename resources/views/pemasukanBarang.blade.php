@@ -397,7 +397,8 @@
                             <td style="text-align: center;">
                                 <div class="action-buttons">
                                     <!-- Tombol Edit (Ikon Pensil SVG) -->
-                                    <button class="btn-action btn-edit" title="Edit">
+                                    <button class="btn-action btn-edit" title="Edit" onclick="editItem(this)" 
+                                        data-pemasukan='@json($r)'>
                                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
                                         </svg>
@@ -418,11 +419,85 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="empty-state">Belum ada data pemasukan barang.</td>
+                            <td colspan="9" class="empty-state" style="text-align: center;">Belum ada data pemasukan barang.</td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Modal Edit Pemasukan -->
+        <div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); z-index:9999; justify-content:center; align-items:center;">
+            <div style="background:white; border-radius:16px; padding:30px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3 style="font-size:18px; font-weight:700; color:#1f2937;">Edit Pemasukan</h3>
+                    <button onclick="closeEditModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#6b7280;">&times;</button>
+                </div>
+
+                <form id="editForm" method="POST">
+                    @csrf
+                    <input type="hidden" name="_method" value="PUT">
+
+                    <!-- Tipe -->
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="font-weight:600; font-size:14px;">Tipe Pemasukan</label>
+                        <select id="editTipe" name="tipe_pemasukan" onchange="toggleEditFields()" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin-top:6px;">
+                            <option value="pembelian">Pembelian</option>
+                            <option value="transfer">Transfer Masuk</option>
+                        </select>
+                    </div>
+
+                    <!-- Supplier (muncul kalau pembelian) -->
+                    <div class="form-group" id="editSupplierGroup" style="margin-bottom:15px;">
+                        <label style="font-weight:600; font-size:14px;">Supplier</label>
+                        <select id="editSupplier" name="supplier" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin-top:6px;">
+                            <option value="">-- Pilih Supplier --</option>
+                            @foreach($suppliers as $s)
+                                <option value="{{ $s->nama_supplier }}">{{ $s->nama_supplier }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- No Surat Jalan -->
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="font-weight:600; font-size:14px;">No Surat Jalan</label>
+                        <input type="text" id="editNoSuratJalan" name="no_surat_jalan" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin-top:6px; box-sizing:border-box;">
+                    </div>
+
+                    <!-- Barang -->
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="font-weight:600; font-size:14px;">Barang</label>
+                        <select id="editBarang" name="barang_id" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin-top:6px;">
+                            @foreach($barangs as $b)
+                                <option value="{{ $b->id }}">{{ $b->nama_barang }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Jumlah -->
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="font-weight:600; font-size:14px;">Jumlah</label>
+                        <input type="number" id="editJumlah" name="jumlah" min="1" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin-top:6px; box-sizing:border-box;">
+                    </div>
+
+                    <!-- Satuan Harga (muncul kalau pembelian) -->
+                    <div class="form-group" id="editHargaGroup" style="margin-bottom:15px;">
+                        <label style="font-weight:600; font-size:14px;">Satuan Harga</label>
+                        <input type="number" id="editSatuanHarga" name="satuan_harga" min="0" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin-top:6px; box-sizing:border-box;">
+                    </div>
+
+                    <!-- Keterangan -->
+                    <div class="form-group" style="margin-bottom:20px;">
+                        <label style="font-weight:600; font-size:14px;">Keterangan</label>
+                        <textarea id="editKeterangan" name="keterangan" rows="3" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin-top:6px; box-sizing:border-box; resize:vertical;"></textarea>
+                    </div>
+
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" onclick="closeEditModal()" style="flex:1; padding:12px; background:#f3f4f6; color:#4b5563; border:2px solid #e5e7eb; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer;">Batal</button>
+                        <button type="submit" style="flex:1; padding:12px; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:white; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer;">Simpan</button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -497,6 +572,45 @@
             const modal = document.getElementById('logoutModal');
             if (event.target === modal) {
                 closeLogoutModal();
+            }
+        }
+
+        function editItem(btn) {
+            const data = JSON.parse(btn.getAttribute('data-pemasukan'));
+
+            document.getElementById('editForm').action = '/edit-pemasukan/' + data.id;
+            document.getElementById('editTipe').value = data.tipe_pemasukan;
+            document.getElementById('editNoSuratJalan').value = data.no_surat_jalan ?? '';
+            document.getElementById('editBarang').value = data.barang_id;
+            document.getElementById('editJumlah').value = data.jumlah;
+            document.getElementById('editSatuanHarga').value = data.satuan_harga ?? 0;
+            document.getElementById('editKeterangan').value = data.keterangan ?? '';
+
+            if (data.tipe_pemasukan === 'pembelian') {
+                document.getElementById('editSupplier').value = data.supplier ?? '';
+            }
+
+            toggleEditFields();
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function toggleEditFields() {
+            const tipe = document.getElementById('editTipe').value;
+            const supplierGroup = document.getElementById('editSupplierGroup');
+            const hargaGroup = document.getElementById('editHargaGroup');
+
+            if (tipe === 'pembelian') {
+                supplierGroup.style.display = 'block';
+                hargaGroup.style.display = 'block';
+            } else {
+                // Transfer: supplier otomatis PUSAT, harga disembunyikan
+                supplierGroup.style.display = 'none';
+                hargaGroup.style.display = 'none';
+                document.getElementById('editSupplier').value = '';
             }
         }
     </script>

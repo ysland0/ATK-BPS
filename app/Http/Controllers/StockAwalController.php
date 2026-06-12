@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request; 
 use Illuminate\Support\Facades\DB; 
 use App\Models\Barang;
+use App\Models\StockAwal;
 
 class StockAwalController extends Controller
 {
@@ -64,5 +65,69 @@ class StockAwalController extends Controller
         ]);
 
         return redirect()->back()->with('success', '✅ Stock awal ' . $barang->nama_barang . ' berhasil diperbarui!');
+    }
+
+    public function importCsv(Request $request)
+    {
+        $request->validate([
+            'file_csv' => 'required|file|mimes:csv,txt',
+        ]);
+
+        $file = $request->file('file_csv');
+        
+        $csv = \League\Csv\Reader::createFromPath($file->getPathname(), 'r');
+        $csv->setHeaderOffset(0);
+        
+        $records = iterator_to_array($csv->getRecords());
+
+        if (empty($records)) {
+            return back()->with('error', 'File CSV kosong!');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Reset semua stok barang ke 0
+            \App\Models\Barang::query()->update(['stok' => 0, 'stok_awal' => 0]);
+
+            // Hapus semua riwayat pengambilan & pemasukan
+            \App\Models\Pengambilan::query()->delete();
+            \App\Models\Pemasukan::query()->delete();
+
+            // Import data baru dari CSV
+            foreach ($records as $row) {
+                $kode     = trim($row['Kode Barang'] ?? '');
+                $nama     = trim($row['Nama Barang'] ?? '');
+                $satuan   = trim($row['Satuan'] ?? '');
+                $stokAwal = intval($row['Saldo di Sistem'] ?? 0);
+
+                if (empty($kode) || empty($nama)) continue;
+
+                $barang = \App\Models\Barang::where('kode_barang', $kode)->first();
+
+                if ($barang) {
+                    $barang->update([
+                        'stok'      => $stokAwal,
+                        'stok_awal' => $stokAwal,
+                        'satuan'    => $satuan ?: $barang->satuan,
+                    ]);
+                } else {
+                    \App\Models\Barang::create([
+                        'kode_barang' => $kode,
+                        'nama_barang' => $nama,
+                        'satuan'      => $satuan,
+                        'stok'        => $stokAwal,
+                        'stok_awal'   => $stokAwal,
+                        'kategori'    => 'Lainnya',
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return back()->with('success', 'Import CSV berhasil! ' . count($records) . ' data berhasil diimport.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal import: ' . $e->getMessage());
+        }
     }
 }

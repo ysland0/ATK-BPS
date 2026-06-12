@@ -13,6 +13,23 @@
         select:focus {
             color: #333 !important;
         }
+
+        .tambah-item-btn {
+            width: 100%;
+            margin-top: 15px;
+            padding: 14px;
+            background: transparent;
+            color: #6366f1;
+            border: 2px dashed #6366f1;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .tambah-item-btn:hover {
+            background: #eef2ff;
+        }
     </style>
 </head>
     
@@ -82,43 +99,40 @@
                     </div>
                 </div>
 
-                <!-- Unit Barang Section -->
-                <div class="section-header">UNIT BARANG</div>
+                    <!-- Unit Barang Section -->
+                    <div class="section-header">UNIT BARANG</div>
 
-                <div class="form-section">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="listBarang">List Barang</label>
-                            <select id="listBarang" name="nama_barang" required onchange="checkStock()">
-                                <option value="">Pilih Nama Barang</option>
-                                @foreach($barangs as $b)
-                                    <option value="{{ $b->nama_barang }}" 
-                                            data-stock="{{ $b->stok }}" 
-                                            data-nama="{{ $b->nama_barang }}">
-                                        {{ $b->nama_barang }} 
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="jumlah">Jumlah</label>
-                            <div class="number-input-wrapper">
-                                <input type="number" id="jumlah" name="jumlah" value="0" min="0" required oninput="checkStock()" onchange="checkStock()">
-                                <div class="number-controls">
+                    <div class="form-section">
+                        <div id="itemBarangContainer">
+                            <div class="item-barang" data-index="0">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Nama Barang</label>
+                                        <select name="nama_barang[]" required onchange="checkStock(this)">
+                                            <option value="">Pilih Nama Barang</option>
+                                            @foreach($barangs as $b)
+                                                <option value="{{ $b->nama_barang }}" 
+                                                        data-stock="{{ $b->stok }}" 
+                                                        data-nama="{{ $b->nama_barang }}">
+                                                    {{ $b->nama_barang }} 
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Jumlah</label>
+                                        <input type="number" name="jumlah[]" value="0" min="0" required 
+                                            oninput="checkStock(this.closest('.item-barang').querySelector('select'))">
+                                    </div>
                                 </div>
+                                <div class="stockAlert" style="display:none; margin-top:15px; padding:12px 15px; border-radius:8px; font-size:14px; font-weight:600;"></div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Alert Box untuk Status Stok -->
-                    <div id="stockAlert" style="display: none; margin-top: 15px; padding: 12px 15px; border-radius: 8px; font-size: 14px; font-weight: 600;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <svg id="alertIcon" width="20" height="20" fill="currentColor" viewBox="0 0 20 20"></svg>
-                            <span id="alertMessage"></span>
-                        </div>
+                        <button type="button" class="tambah-item-btn" onclick="tambahItem()">
+                            + Tambah Item Barang
+                        </button>
                     </div>
-                </div>
 
                 <!-- Tanda Tangan Section -->
                 <div class="section-header">TANDA TANGAN</div>
@@ -152,124 +166,87 @@
     <script>
         // Set tanggal hari ini otomatis
         document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const wib = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+            const today = wib.toISOString().split('T')[0];
             document.getElementById('tanggal').value = today;
         });
 
-        // Fungsi untuk cek stok barang
-        function checkStock() {
-            const barangSelect = document.getElementById('listBarang');
-            const jumlahInput = document.getElementById('jumlah');
-            const alertBox = document.getElementById('stockAlert');
-            const alertIcon = document.getElementById('alertIcon');
-            const alertMessage = document.getElementById('alertMessage');
+        // Cek stok per item
+        function checkStock(selectEl) {
+            const itemEl = selectEl.closest('.item-barang');
+            const jumlahInput = itemEl.querySelector('input[name="jumlah[]"]');
+            const alertBox = itemEl.querySelector('.stockAlert');
 
-            if (!barangSelect.value) {
+            if (!selectEl.value) {
                 alertBox.style.display = 'none';
                 return;
             }
 
-            const selectedOption = barangSelect.options[barangSelect.selectedIndex];
+            const selectedOption = selectEl.options[selectEl.selectedIndex];
             const stock = parseInt(selectedOption.getAttribute('data-stock'));
             const namaBarang = selectedOption.getAttribute('data-nama');
             const jumlahDiminta = parseInt(jumlahInput.value) || 0;
 
-            // Reset display
             alertBox.style.display = 'block';
 
-            // Stok habis (0)
             if (stock === 0) {
                 alertBox.style.background = '#fee2e2';
                 alertBox.style.border = '2px solid #ef4444';
                 alertBox.style.color = '#991b1b';
-                alertIcon.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>';
-                alertMessage.innerHTML = `<strong>❌ STOK HABIS!</strong><br>Barang "${namaBarang}" tidak tersedia (stok: 0). Silakan hubungi admin untuk pengadaan barang.`;
+                alertBox.innerHTML = `<strong>❌ STOK HABIS!</strong><br>Barang "${namaBarang}" tidak tersedia (stok: 0).`;
                 jumlahInput.value = 0;
                 jumlahInput.disabled = true;
-                return;
-            } 
-            // Stok hampir habis (1-5)
-            else if (stock >= 1 && stock <= 5) {
+            } else if (stock >= 1 && stock <= 5) {
+                jumlahInput.disabled = false;
                 if (jumlahDiminta > stock) {
                     alertBox.style.background = '#fee2e2';
                     alertBox.style.border = '2px solid #ef4444';
                     alertBox.style.color = '#991b1b';
-                    alertIcon.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>';
-                    alertMessage.innerHTML = `<strong>⚠️ STOK TIDAK MENCUKUPI!</strong><br>Stok "${namaBarang}" hanya tersisa <strong>${stock}</strong>. Jumlah diminta: <strong>${jumlahDiminta}</strong>. Silakan kurangi jumlah pengambilan.`;
+                    alertBox.innerHTML = `<strong>⚠️ STOK TIDAK MENCUKUPI!</strong><br>Stok "${namaBarang}" hanya tersisa <strong>${stock}</strong>. Jumlah diminta: <strong>${jumlahDiminta}</strong>.`;
                     jumlahInput.value = stock;
                 } else {
                     alertBox.style.background = '#fef3c7';
                     alertBox.style.border = '2px solid #fbbf24';
                     alertBox.style.color = '#92400e';
-                    alertIcon.innerHTML = '<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>';
-                    alertMessage.innerHTML = `<strong>⚠️ PERINGATAN: STOK HAMPIR HABIS!</strong><br>Barang "${namaBarang}" tersisa <strong>${stock}</strong> unit. Segera lakukan pengadaan ulang!`;
+                    alertBox.innerHTML = `<strong>⚠️ STOK HAMPIR HABIS!</strong><br>Barang "${namaBarang}" tersisa <strong>${stock}</strong> unit.`;
                 }
+            } else {
                 jumlahInput.disabled = false;
-            }
-            // Stok cukup (> 5)
-            else {
                 if (jumlahDiminta > stock) {
                     alertBox.style.background = '#fee2e2';
                     alertBox.style.border = '2px solid #ef4444';
                     alertBox.style.color = '#991b1b';
-                    alertIcon.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>';
-                    alertMessage.innerHTML = `<strong>⚠️ STOK TIDAK MENCUKUPI!</strong><br>Stok "${namaBarang}" tersedia: <strong>${stock}</strong>. Jumlah diminta: <strong>${jumlahDiminta}</strong>. Silakan kurangi jumlah pengambilan.`;
+                    alertBox.innerHTML = `<strong>⚠️ STOK TIDAK MENCUKUPI!</strong><br>Stok tersedia: <strong>${stock}</strong>. Jumlah diminta: <strong>${jumlahDiminta}</strong>.`;
                     jumlahInput.value = stock;
                 } else if (jumlahDiminta > 0) {
                     alertBox.style.background = '#d1fae5';
                     alertBox.style.border = '2px solid #10b981';
                     alertBox.style.color = '#065f46';
-                    alertIcon.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>';
-                    alertMessage.innerHTML = `<strong>✅ STOK TERSEDIA!</strong><br>Barang "${namaBarang}" tersedia <strong>${stock}</strong> unit. Pengambilan <strong>${jumlahDiminta}</strong> unit dapat diproses.`;
+                    alertBox.innerHTML = `<strong>✅ STOK TERSEDIA!</strong><br>Pengambilan <strong>${jumlahDiminta}</strong> dari <strong>${stock}</strong> unit dapat diproses.`;
                 } else {
                     alertBox.style.display = 'none';
                 }
-                jumlahInput.disabled = false;
             }
         }
 
-        // Fungsi untuk jumlah increment/decrement
-        function incrementJumlah() {
-            const input = document.getElementById('jumlah');
-            const barangSelect = document.getElementById('listBarang');
-            
-            if (!barangSelect.value) {
-                alert('Silakan pilih barang terlebih dahulu!');
-                return;
-            }
-
-            const selectedOption = barangSelect.options[barangSelect.selectedIndex];
-            const stock = parseInt(selectedOption.getAttribute('data-stock'));
-
-            if (stock === 0) {
-                alert('Barang ini tidak tersedia (stok habis)!');
-                return;
-            }
-
-            const currentValue = parseInt(input.value) || 0;
-            if (currentValue < stock) {
-                input.value = currentValue + 1;
-                checkStock();
-            } else {
-                alert(`Stok barang hanya tersedia ${stock} unit!`);
-            }
+        // Tambah item baru
+        function tambahItem() {
+            const template = document.getElementById('itemTemplate');
+            const clone = template.content.cloneNode(true);
+            document.getElementById('itemBarangContainer').appendChild(clone);
         }
 
-        function decrementJumlah() {
-            const input = document.getElementById('jumlah');
-            const currentValue = parseInt(input.value) || 0;
-            if (currentValue > 0) {
-                input.value = currentValue - 1;
-                checkStock();
-            }
+        // Hapus item
+        function hapusItem(btnEl) {
+            btnEl.closest('.item-barang').remove();
         }
 
-        // Canvas untuk tanda tangan
+        // Canvas tanda tangan
         const canvas = document.getElementById('signatureCanvas');
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
 
-        // Set canvas size
         function resizeCanvas() {
             const container = canvas.parentElement;
             canvas.width = container.offsetWidth;
@@ -278,13 +255,10 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // Mouse events
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stopDrawing);
         canvas.addEventListener('mouseout', stopDrawing);
-
-        // Touch events untuk mobile
         canvas.addEventListener('touchstart', handleTouch);
         canvas.addEventListener('touchmove', handleTouch);
         canvas.addEventListener('touchend', stopDrawing);
@@ -308,7 +282,6 @@
 
         function stopDrawing() {
             isDrawing = false;
-            // Save signature data
             document.getElementById('tandaTanganData').value = canvas.toDataURL();
         }
 
@@ -327,36 +300,37 @@
             document.getElementById('tandaTanganData').value = '';
         }
 
-        // Form submission
+        // Submit form
         document.getElementById('pengambilanForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            // Validasi barang dipilih
-            const barangSelect = document.getElementById('listBarang');
-            if (!barangSelect.value) {
-                alert('Silakan pilih barang terlebih dahulu!');
-                return;
-            }
 
-            // Validasi stok
-            const selectedOption = barangSelect.options[barangSelect.selectedIndex];
-            const stock = parseInt(selectedOption.getAttribute('data-stock'));
-            const namaBarang = selectedOption.getAttribute('data-nama');
-            const jumlahDiminta = parseInt(document.getElementById('jumlah').value) || 0;
+            // Validasi semua item
+            const items = document.querySelectorAll('.item-barang');
+            for (const item of items) {
+                const select = item.querySelector('select');
+                const jumlahInput = item.querySelector('input[name="jumlah[]"]');
+                const jumlahDiminta = parseInt(jumlahInput.value) || 0;
 
-            if (stock === 0) {
-                alert(`❌ TIDAK DAPAT DIPROSES!\n\nBarang "${namaBarang}" tidak tersedia (stok: 0).\nSilakan hubungi admin untuk pengadaan barang.`);
-                return;
-            }
+                if (!select.value) {
+                    alert('Silakan pilih barang untuk semua item!');
+                    return;
+                }
 
-            if (jumlahDiminta > stock) {
-                alert(`⚠️ STOK TIDAK MENCUKUPI!\n\nStok tersedia: ${stock}\nJumlah diminta: ${jumlahDiminta}\n\nSilakan kurangi jumlah pengambilan.`);
-                return;
-            }
+                const stock = parseInt(select.options[select.selectedIndex].getAttribute('data-stock'));
+                const namaBarang = select.options[select.selectedIndex].getAttribute('data-nama');
 
-            if (jumlahDiminta <= 0) {
-                alert('Jumlah pengambilan harus lebih dari 0!');
-                return;
+                if (stock === 0) {
+                    alert(`❌ Barang "${namaBarang}" stok habis!`);
+                    return;
+                }
+                if (jumlahDiminta <= 0) {
+                    alert(`Jumlah untuk "${namaBarang}" harus lebih dari 0!`);
+                    return;
+                }
+                if (jumlahDiminta > stock) {
+                    alert(`⚠️ Stok "${namaBarang}" tidak mencukupi!\nTersedia: ${stock}, diminta: ${jumlahDiminta}`);
+                    return;
+                }
             }
 
             // Validasi tanda tangan
@@ -365,25 +339,38 @@
                 return;
             }
 
-            // Konfirmasi pengambilan
-            const konfirmasi = confirm(`Konfirmasi Pengambilan Barang:\n\nBarang: ${namaBarang}\nJumlah: ${jumlahDiminta}\nStok Tersisa: ${stock - jumlahDiminta}\n\nApakah data sudah benar?`);
-            
-            if (konfirmasi) {
-                alert('✅ Form berhasil disubmit!\n\nPengambilan barang telah dicatat.');
-                
-                // Reset form
-        
-                document.getElementById('stockAlert').style.display = 'none';
-                document.getElementById('jumlah').disabled = false;
-                
-                
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('tanggal').value = today;
-                document.getElementById('tandaTanganData').value = canvas.toDataURL();
-                
-                this.submit();
-            }
+            this.submit();
         });
     </script>
+
+    <template id="itemTemplate">
+    <div class="item-barang" style="margin-top: 15px; padding: 15px; border: 2px solid #6366f1; border-radius: 10px;">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Nama Barang</label>
+                <select name="nama_barang[]" required onchange="checkStock(this)">
+                    <option value="">Pilih Nama Barang</option>
+                    @foreach($barangs as $b)
+                        <option value="{{ $b->nama_barang }}" 
+                                data-stock="{{ $b->stok }}" 
+                                data-nama="{{ $b->nama_barang }}">
+                            {{ $b->nama_barang }} 
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Jumlah</label>
+                <input type="number" name="jumlah[]" value="0" min="0" required 
+                       oninput="checkStock(this.closest('.item-barang').querySelector('select'))">
+            </div>
+        </div>
+        <div class="stockAlert" style="display:none; margin-top:15px; padding:12px 15px; border-radius:8px; font-size:14px; font-weight:600;"></div>
+        <button type="button" onclick="hapusItem(this)" 
+                style="margin-top:10px; background:#fee2e2; color:#991b1b; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">
+            🗑️
+        </button>
+    </div>
+</template>
 </body>
 </html>

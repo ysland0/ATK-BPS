@@ -7,10 +7,13 @@ use App\Models\Barang; // Panggil model Barang
 
 class BarangSeeder extends Seeder
 {
-    public function run(): void
+   public function run(): void
     {
+        // Hapus data lama dulu sebelum insert
+        Barang::truncate();
+
         $file = fopen(database_path('seeders/ListBarang.csv'), "r");
-        fgetcsv($file);
+        fgetcsv($file); // Skip header
         
         while (($data = fgetcsv($file, 2000, ",")) !== FALSE) {
             $jumlahDariFile = (int)$data[4];

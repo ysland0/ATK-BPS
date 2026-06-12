@@ -9,7 +9,7 @@ class SupplierController extends Controller
 {
     public function index()
     {
-        $suppliers = Supplier::orderBy('nama_supplier', 'asc')->get();
+        $suppliers = \App\Models\Supplier::orderBy('nama_supplier', 'asc')->get();
         return view('masterSupplier', compact('suppliers'));
     }
 
@@ -28,9 +28,19 @@ class SupplierController extends Controller
         return redirect()->back()->with('success', 'Supplier berhasil ditambahkan!');
     }
 
-    public function update(Request $request, $id)
+   public function update(Request $request, $id)
     {
         $supplier = Supplier::findOrFail($id);
+
+        $request->validate([
+            'kode_supplier' => 'required|unique:suppliers,kode_supplier,' . $id,
+            'nama_supplier' => 'required',
+            'nama_pic'      => 'required',
+            'telp_pic'      => 'required',
+            'alamat'        => 'required',
+            'email'         => 'required|email',
+        ]);
+
         $supplier->update($request->all());
         return redirect()->back()->with('success', 'Data supplier berhasil diubah!');
     }

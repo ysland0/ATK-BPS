@@ -5,6 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Pegawai - Pencatatan ATK</title>
     <link rel="stylesheet" href="{{ asset('assets/css/masterPegawai.css') }}">
+    <style>
+        .pagination-wrapper {
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            cursor: grab;
+            scrollbar-width: thin;
+        }
+        .pagination-wrapper::-webkit-scrollbar { height: 5px; }
+        .pagination-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .pagination-container {
+            display: inline-flex;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: white;
+            white-space: nowrap;
+        }
+
+        .pagination-btn {
+            padding: 10px 18px;
+            border: none;
+            border-right: 1px solid #e5e7eb;
+            background: white;
+            color: #4a5fc1;
+            cursor: pointer;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .pagination-btn.active {
+            background: #4a5fc1 !important;
+            color: white !important;
+        }
+
+        /* Styling Tombol Aksi Squircle */
+        .btn-action {
+            width: 32px; height: 32px; border-radius: 10px; border: none;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .view-btn { background-color: #e0f2fe; color: #0369a1; }
+        .edit-btn { background-color: #fef3c7; color: #b45309; }
+        .delete-btn { background-color: #fee2e2; color: #b91c1c; }
+    </style>
     
 </head>
 <body>
@@ -157,13 +204,8 @@
                         <td>{{ $p->id }}</td>
                         <td>
                             <div class="action-buttons" style="display: flex; gap: 8px;">
-                                <!-- View -->
-                                <button class="action-btn view-btn" onclick="viewItem('@json($p)')">
-                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                </button>
-                                
                                 <!-- Edit -->
-                                <button class="action-btn edit-btn" onclick="editItem('@json($p)')">
+                                <button class="action-btn edit-btn" onclick="editItem(this)" data-pegawai='@json($p)'>
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
                                 </button>
 
@@ -180,6 +222,12 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding: 16px 4px 4px; flex-wrap:wrap; gap:12px;">
+                <span style="font-size:13px; color:#6b7280;" id="paginationInfo"></span>
+                <div id="paginationContainer" style="display:inline-flex; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; background:white;">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -208,7 +256,7 @@
                 <!-- ID Pegawai biasanya otomatis dari sistem (Auto Increment), 
                     jadi di form 'Tambah' ini bisa dihapus atau dibuat readonly -->
                 <div class="form-group">
-                    <label>ID Pegawai (Otomatis)</label>
+                    <label>ID Pegawai</label>
                     <input type="text" id="idPegawai" placeholder="Akan terisi otomatis" readonly style="background: #f3f4f6;">
                 </div>
 
@@ -240,71 +288,130 @@
     </div>
 
  <script>
-    // 1. Fungsi Buka Modal Tambah
-    function showAddModal() {
-        // Pastikan elemen ada sebelum diakses agar tidak error
-        const modalTitle = document.getElementById('modalTitle');
-        const form = document.getElementById('pegawaiForm');
-        const methodField = document.getElementById('methodField');
-        const addModal = document.getElementById('addModal');
-        const idGroup = document.getElementById('idGroup');
+    // ========== PAGINATION ==========
+    const ROWS_PER_PAGE = 10;
+    let currentPage = 1;
+    let allRows = [];
+    let filteredRows = [];
 
-        if (modalTitle) modalTitle.textContent = 'Tambah Pegawai Baru';
-        if (form) {
-            form.action = "{{ route('pegawai.store') }}";
-            form.reset();
-        }
-        if (methodField) methodField.innerHTML = ''; // Pastikan tidak ada @method('PUT')
-        if (idGroup) idGroup.style.display = 'none'; // Sembunyikan field ID
-        if (addModal) addModal.style.display = 'flex';
+    function initPagination() {
+        allRows = Array.from(document.querySelectorAll('#tableBody tr'));
+        filteredRows = [...allRows];
+        renderPage(1);
     }
 
-    // 2. Fungsi Buka Modal Edit
-    function editItem(data) {
-        document.getElementById('modalTitle').textContent = 'Edit Pegawai';
-        document.getElementById('pegawaiForm').action = '/masterPegawai/' + data.id;
-        document.getElementById('methodField').innerHTML = '<input type="hidden" name="_method" value="PUT">';
-        
-        document.getElementById('namaPegawai').value = data.nama;
-        
-        // Tampilkan ID hanya untuk info (readonly)
-        const idGroup = document.getElementById('idGroup');
-        if (idGroup) {
-            idGroup.style.display = 'block';
-            document.getElementById('idPegawaiDisplay').value = data.id;
-        }
-        
-        document.getElementById('addModal').style.display = 'flex';
+    function renderPage(page) {
+        currentPage = page;
+        const total = filteredRows.length;
+        const totalPages = Math.max(1, Math.ceil(total / ROWS_PER_PAGE));
+        currentPage = Math.min(currentPage, totalPages);
+
+        const start = (currentPage - 1) * ROWS_PER_PAGE;
+        const end = start + ROWS_PER_PAGE;
+
+        allRows.forEach(r => r.style.display = 'none');
+        filteredRows.forEach((r, i) => {
+            r.style.display = (i >= start && i < end) ? '' : 'none';
+        });
+
+        const from = total === 0 ? 0 : start + 1;
+        const to = Math.min(end, total);
+        document.getElementById('paginationInfo').textContent =
+            `Menampilkan ${from}–${to} dari ${total} data`;
+
+        renderButtons(totalPages);
     }
 
-    // 3. Fungsi Buka Modal View
-    function viewItem(data) {
-        document.getElementById('v_id').textContent = data.id;
-        document.getElementById('v_nama').textContent = data.nama;
-        document.getElementById('viewModal').style.display = 'flex';
+    function renderButtons(totalPages) {
+        const container = document.getElementById('paginationContainer');
+        container.innerHTML = '';
+
+        const btnStyle = `padding:8px 14px; border:none; border-right:1px solid #e5e7eb;
+            background:white; color:#4a5fc1; cursor:pointer; font-weight:600;
+            font-size:13px; transition:background 0.15s;`;
+        const activeStyle = `background:#4a5fc1 !important; color:white !important;`;
+
+        const prev = document.createElement('button');
+        prev.innerHTML = '&#8592;';
+        prev.style.cssText = btnStyle;
+        prev.disabled = currentPage === 1;
+        prev.style.opacity = currentPage === 1 ? '0.4' : '1';
+        prev.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
+        prev.onclick = () => renderPage(currentPage - 1);
+        container.appendChild(prev);
+
+        getPageRange(currentPage, totalPages).forEach(p => {
+            if (p === '...') {
+                const dot = document.createElement('span');
+                dot.textContent = '...';
+                dot.style.cssText = `padding:8px 10px; border-right:1px solid #e5e7eb;
+                    color:#9ca3af; font-size:13px; background:white;`;
+                container.appendChild(dot);
+            } else {
+                const btn = document.createElement('button');
+                btn.textContent = p;
+                btn.style.cssText = btnStyle + (p === currentPage ? activeStyle : '');
+                btn.onclick = () => renderPage(p);
+                container.appendChild(btn);
+            }
+        });
+
+        const next = document.createElement('button');
+        next.innerHTML = '&#8594;';
+        next.style.cssText = btnStyle + 'border-right:none;';
+        next.disabled = currentPage === totalPages;
+        next.style.opacity = currentPage === totalPages ? '0.4' : '1';
+        next.style.cursor = currentPage === totalPages ? 'not-allowed' : 'pointer';
+        next.onclick = () => renderPage(currentPage + 1);
+        container.appendChild(next);
     }
 
-    // 4. Fungsi Tutup Modal
-    function closeAddModal() { 
-        document.getElementById('addModal').style.display = 'none'; 
-    }
-    function closeViewModal() { 
-        document.getElementById('viewModal').style.display = 'none'; 
+    function getPageRange(current, total) {
+        if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+        if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+        if (current >= total - 3) return [1, '...', total-4, total-3, total-2, total-1, total];
+        return [1, '...', current-1, current, current+1, '...', total];
     }
 
-    // 5. Pencarian
+    // ========== SEARCH (dengan pagination) ==========
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('#tableBody tr');
-            rows.forEach(row => {
-                row.style.display = row.textContent.toLowerCase().includes(searchTerm) ? '' : 'none';
-            });
+            const term = e.target.value.toLowerCase();
+            filteredRows = allRows.filter(r => r.textContent.toLowerCase().includes(term));
+            renderPage(1);
         });
     }
 
-    // 6. Klik Luar Modal untuk Tutup
+    document.addEventListener('DOMContentLoaded', initPagination);
+
+
+    // ========== MODAL ==========
+    function showAddModal() {
+        document.getElementById('modalTitle').textContent = 'Tambah Pegawai Baru';
+        document.getElementById('pegawaiForm').action = "{{ route('pegawai.store') }}";
+        document.getElementById('pegawaiForm').reset();
+        document.getElementById('methodField').innerHTML = '';
+        document.getElementById('idPegawai').closest('.form-group').style.display = 'block';
+        document.getElementById('addModal').style.display = 'flex';
+    }
+
+    function editItem(btn) {
+        const data = JSON.parse(btn.getAttribute('data-pegawai'));
+
+        document.getElementById('modalTitle').textContent = 'Edit Pegawai';
+        document.getElementById('pegawaiForm').action = '/masterPegawai/' + data.id;
+        document.getElementById('methodField').innerHTML = '<input type="hidden" name="_method" value="PUT">';
+        document.getElementById('namaPegawai').value = data.nama;
+        document.getElementById('idPegawai').closest('.form-group').style.display = 'none';
+
+        document.getElementById('addModal').style.display = 'flex';
+    }
+
+
+    function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+    function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
+
     window.onclick = function(event) {
         if (event.target.className === 'modal-overlay') {
             closeAddModal();
@@ -313,10 +420,9 @@
         }
     }
 
-    // Fungsi Logout
     function showLogoutModal() { document.getElementById('logoutModal').style.display = 'flex'; }
     function closeLogoutModal() { document.getElementById('logoutModal').style.display = 'none'; }
-    function confirmLogout() { window.location.href = '/'; }
+    function confirmLogout() {window.location.href = "{{ route('logout') }}";}
 </script>
 
     <div id="viewModal" class="modal-overlay">
